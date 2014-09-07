@@ -1,7 +1,9 @@
 #include <glib.h>
 #include <stdlib.h>
+#include <signal.h>
 
 #include "tcpbridge_options.h"
+#include "tcpbridge_signal.h"
 #include "freeatexit.h"
 
 void test_no_options() {
@@ -100,8 +102,28 @@ void test_all_values() {
     g_assert(result->second_port == 8);
 }
 
+void test_signal(int signal, bool success) {
+    if (g_test_subprocess()) {
+        raise(signal);
+    }
+
+    g_test_trap_subprocess(NULL, 0, 0);
+    if (success) {
+        g_test_trap_assert_passed();
+    } else {
+        g_test_trap_assert_failed();
+    }
+}
+
+void test_sighup() { test_signal(SIGHUP, true); }
+void test_sigterm() { test_signal(SIGTERM, true); }
+void test_sigint() { test_signal(SIGINT, true); }
+void test_sigusr1() { test_signal(SIGUSR1, false); }
+
 int main(int argc, char *argv[]) {
     atexit(free_atexit);
+    register_signal_handler();
+
     g_test_init(&argc, &argv, NULL);
     g_test_add_func("/options/no_options", test_no_options);
     g_test_add_func("/options/wrong_option", test_wrong_option);
@@ -110,6 +132,11 @@ int main(int argc, char *argv[]) {
     g_test_add_func("/options/wrong_port1", test_wrong_port1);
     g_test_add_func("/options/wrong_port2", test_wrong_port2);
     g_test_add_func("/options/all_values", test_all_values);
+    g_test_add_func("/signals/sighup", test_sighup);
+    g_test_add_func("/signals/sigterm", test_sigterm);
+    g_test_add_func("/signals/sigint", test_sigint);
+    // ...and an example for a signal that is not implemented
+    g_test_add_func("/signals/sigusr1", test_sigusr1);
     return g_test_run();
 }
 
