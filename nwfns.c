@@ -33,12 +33,8 @@ int bind_socket(char const *address, uint16_t const port, bool use_ipv6) {
     struct addrinfo *addresses = NULL;
     struct addrinfo hints = {
         .ai_socktype = SOCK_STREAM,
+        .ai_family = use_ipv6 ? AF_INET6 : AF_INET,
     };
-    if (use_ipv6) {
-        hints.ai_family = AF_INET6;
-    } else {
-        hints.ai_family = AF_INET;
-    }
     char port_str[6];
     snprintf(port_str, 6, "%d", port);
     int res;
@@ -61,8 +57,11 @@ int bind_socket(char const *address, uint16_t const port, bool use_ipv6) {
         }
 
         if (bind(sock, current_ai->ai_addr, current_ai->ai_addrlen) == 0) {
-            listen(sock, 1);
+            res = listen(sock, 50);
+            assert(res == 0);
             break;
+        } else {
+            warn("bind() failed");
         }
     }
 
