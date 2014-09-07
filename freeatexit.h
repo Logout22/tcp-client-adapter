@@ -1,6 +1,8 @@
 #ifndef __FREEATEXIT_H__
 #define __FREEATEXIT_H__
 
+#include "common.h"
+
 typedef struct freeable_object {
     void (*ptr_free_fn)(void*);
     void *object;

@@ -1,6 +1,7 @@
-#ifndef __TCPBRIDGE_TYPES_H__
-#define __TCPBRIDGE_TYPES_H__
+#ifndef __TCPBRIDGE_OPTIONS_H__
+#define __TCPBRIDGE_OPTIONS_H__
 
+#include "common.h"
 #include <inttypes.h>
 #include <stdbool.h>
 
@@ -13,15 +14,10 @@ typedef struct tcpbridge_options {
 } tcpbridge_options;
 
 tcpbridge_options *alloc_tcpbridge_options();
-void free_tcpbridge_options(void *target);
+void free_tcpbridge_options(void *t);
 
-typedef struct socket_pair {
-    int sock1;
-    int sock2;
-} socket_pair;
+char *usage_text(char const *progname);
+tcpbridge_options *evaluate_options(int argc, char *argv[]);
 
-socket_pair *alloc_socket_pair();
-void free_socket_pair(void *target);
-
-#endif
+#endif //__TCPBRIDGE_OPTIONS_H__
 

@@ -1,14 +1,18 @@
 #ifndef __NWFNS_H__
 #define __NWFNS_H__
 
+#include "common.h"
 #include <inttypes.h>
 #include <stdbool.h>
-#include "tcpbridge_types.h"
+#include <event2/event.h>
+#include "tcpbridge_options.h"
 
-int bind_socket(char const *address, uint16_t const port, bool use_ipv6);
-void connect_sockets(socket_pair *serversocks);
-void tcpbridge_free_eventbase(void *base);
-void tcpbridge_free_event(void *ev);
+typedef struct socket_pair {
+    int sock1;
+    int sock2;
+} socket_pair;
+
+struct event_base *setup_network(tcpbridge_options *opts);
 
 #endif
 
