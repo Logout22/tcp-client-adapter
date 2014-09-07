@@ -14,6 +14,7 @@ void test_no_options() {
 
     g_test_trap_subprocess(NULL, 0, 0);
     g_test_trap_assert_failed();
+    g_test_trap_assert_stderr("*Ports are required for forwarding.\n\nUsage*");
 }
 
 void test_wrong_option() {
@@ -24,6 +25,7 @@ void test_wrong_option() {
 
     g_test_trap_subprocess(NULL, 0, 0);
     g_test_trap_assert_failed();
+    g_test_trap_assert_stderr("*Unrecognised option*");
 }
 
 void test_help() {
@@ -65,6 +67,7 @@ void test_wrong_port1() {
 
     g_test_trap_subprocess(NULL, 0, 0);
     g_test_trap_assert_failed();
+    g_test_trap_assert_stderr("*First port invalid*");
 }
 
 void test_wrong_port2() {
@@ -80,6 +83,7 @@ void test_wrong_port2() {
 
     g_test_trap_subprocess(NULL, 0, 0);
     g_test_trap_assert_failed();
+    g_test_trap_assert_stderr("*Second port invalid*");
 }
 
 void test_all_values() {
