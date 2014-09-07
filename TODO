@@ -1,0 +1,3 @@
+- add a --persistent switch to wait for clients indefinitely,
+    exit after first connection loss by default
+
