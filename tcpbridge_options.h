@@ -5,12 +5,15 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+typedef struct tcpbridge_address {
+    char *conn_id_string;
+    char *address_str;
+    uint16_t port;
+}
+
 typedef struct tcpbridge_options {
     bool use_ipv6;
-    char *first_address_str;
-    char *second_address_str;
-    uint16_t first_port;
-    uint16_t second_port;
+    tcpbridge_address connection_endpoints[2];
 } tcpbridge_options;
 
 tcpbridge_options *alloc_tcpbridge_options();

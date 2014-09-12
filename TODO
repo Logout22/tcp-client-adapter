@@ -1,4 +1,5 @@
 - add a --persistent switch to wait for clients indefinitely,
     exit after first connection loss by default
 - export libevent's SSL functionality
+- allow more than two endpoints (master-slave)?
 
