@@ -13,23 +13,39 @@
 #include "tcpbridge_options.h"
 #include "freeatexit.h"
 
-tcpbridge_options *alloc_tcpbridge_options() {
-    tcpbridge_options *result =
-        (tcpbridge_options*) calloc(1, sizeof(tcpbridge_options));
-    assert(result != NULL);
+tcpbridge_address *allocate_tcpbridge_address() {
+    ALLOCATE(tcpbridge_address, result);
+
+    result->conn_id_string = NULL;
+    result->address_str = NULL;
+    result->port = 0;
+    return result;
+}
+
+void free_tcpbridge_address(void *t) {
+    tcpbridge_address *target = (tcpbridge_address*) t;
+    free(target->address_str);
+    free(target->conn_id_string);
+    free(target);
+}
+
+tcpbridge_options *allocate_tcpbridge_options() {
+    ALLOCATE(tcpbridge_options, result);
 
     result->use_ipv6 = false;
-    result->first_address_str = NULL;
-    result->second_address_str = NULL;
-    result->first_port = 0;
-    result->second_port = 0;
+    int i;
+    for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
+        result->connection_endpoints = allocate_tcpbridge_address();
+    }
     return result;
 }
 
 void free_tcpbridge_options(void *t) {
     tcpbridge_options *target = (tcpbridge_options *) t;
-    free(target->second_address_str);
-    free(target->first_address_str);
+    int i;
+    for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
+        free_tcpbridge_address(target->connection_endpoints);
+    }
     free(target);
 }
 
@@ -84,7 +100,7 @@ bool get_port(char const *arg, uint16_t *out_port) {
 
 tcpbridge_options *evaluate_options(int argc, char *argv[]) {
     tcpbridge_options *result;
-    result = alloc_tcpbridge_options();
+    result = allocate_tcpbridge_options();
     free_object_at_exit(free_tcpbridge_options, result);
 
     optind = 1;
@@ -94,15 +110,15 @@ tcpbridge_options *evaluate_options(int argc, char *argv[]) {
         if (selected_option == '6') {
             result->use_ipv6 = true;
         } else if (selected_option == 'a') {
-            result->first_address_str = strdup(optarg);
+            result->connection_endpoints[0]->address_str = strdup(optarg);
         } else if (selected_option == 'b') {
-            result->second_address_str = strdup(optarg);
+            result->connection_endpoints[1]->address_str = strdup(optarg);
         } else if (selected_option == 'p') {
-            if (!get_port(optarg, &result->first_port)) {
+            if (!get_port(optarg, &result->connection_endpoints[0]->port)) {
                 errx(EINVAL, "First port invalid: %s", optarg);
             }
         } else if (selected_option == 'q') {
-            if (!get_port(optarg, &result->second_port)) {
+            if (!get_port(optarg, &result->connection_endpoints[1]->port)) {
                 errx(EINVAL, "Second port invalid: %s", optarg);
             }
         } else if (selected_option == 'h') {
@@ -116,18 +132,19 @@ tcpbridge_options *evaluate_options(int argc, char *argv[]) {
     }
 
     // check requirements and set defaults where applicable
-    if (result->first_port == 0 || result->second_port == 0) {
-        errx(ENOENT, "Ports are required for forwarding.\n\nUsage: %s",
-                usage_text(argv[0]));
-    }
-    if (result->first_address_str == NULL) {
-        result->first_address_str = strdup(DEFAULT_ADDRESS);
-    }
-    if (result->second_address_str == NULL) {
-        result->second_address_str = strdup(DEFAULT_ADDRESS);
+    int i;
+    for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
+        tcpbridge_address *current_ep = result->connection_endpoints[i];
+
+        if (current_ep->port == 0) {
+            errx(ENOENT, "Both ports are required for forwarding.\n\n"
+                    "Usage: %s", usage_text(argv[0]));
+        }
+        if (current_ep->address_str == NULL) {
+            current_ep->address_str = strdup(DEFAULT_ADDRESS);
+        }
     }
 
     return result;
 }
-
 

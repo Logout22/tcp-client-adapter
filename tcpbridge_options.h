@@ -11,12 +11,16 @@ typedef struct tcpbridge_address {
     uint16_t port;
 }
 
+tcpbridge_address *allocate_tcpbridge_address();
+void free_tcpbridge_address(void *t);
+
+#define NUMBER_OF_ENDPOINTS 2
 typedef struct tcpbridge_options {
     bool use_ipv6;
-    tcpbridge_address connection_endpoints[2];
+    tcpbridge_address *connection_endpoints[NUMBER_OF_ENDPOINTS];
 } tcpbridge_options;
 
-tcpbridge_options *alloc_tcpbridge_options();
+tcpbridge_options *allocate_tcpbridge_options();
 void free_tcpbridge_options(void *t);
 
 char *usage_text(char const *progname);

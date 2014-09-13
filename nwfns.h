@@ -8,9 +8,10 @@
 #include "tcpbridge_options.h"
 
 typedef struct bridge_client {
-    tcpbridge_address address;
     int server_socket;
     struct bufferevent *client_bev;
+    // reference pointers:
+    tcpbridge_address *address;
     struct bridge_client *opposite_client;
 } bridge_client;
 

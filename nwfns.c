@@ -16,12 +16,11 @@ void tcpbridge_free_eventbase(void *base);
 void tcpbridge_free_event(void *ev);
 
 bridge_client *allocate_bridge_client() {
-    bridge_client *result = (bridge_client*) calloc(1, sizeof(bridge_client));
-    assert(result != NULL);
+    ALLOCATE(bridge_client, result);
 
-    result->conn_id_string = NULL;
     result->server_socket = -1;
     result->client_bev = NULL;
+    result->address = NULL;
     result->opposite_client = NULL;
 
     return result;
@@ -32,12 +31,14 @@ void free_bridge_client(void *arg) {
 
     bufferevent_free(client->client_bev);
     close(client->server_socket);
-    free(client->conn_id_string);
+    // no need to free reference pointers address and opposite_client
     free(client);
 }
 
 void connect_clients(struct event_base *evbase);
-void setup_client(struct event_base evbase, bridge_client *client);
+void setup_client(
+        struct event_base evbase, bridge_client *client,
+        tcpbridge_options *opts, int id);
 
 struct event_base *setup_network(tcpbridge_options *opts) {
     struct event_base *evbase = event_base_new();
@@ -58,19 +59,21 @@ void connect_clients(struct event_base *evbase, tcpbridge_options *opts) {
     client1->opposite_client = client2;
     client2->opposite_client = client1;
 
-    setup_client(evbase, client1, opts);
-    setup_client(evbase, client2, opts);
+    setup_client(evbase, client1, opts, 0);
+    setup_client(evbase, client2, opts, 1);
 }
 
 int bind_socket(char const *address, uint16_t const port, bool use_ipv6);
 void register_server_callback(
         struct event_base *evbase, bridge_client *client);
 
-void setup_client(struct event_base evbase, bridge_client *client) {
-    asprintf(client->conn_id_string,
+void setup_client(
+        struct event_base evbase, bridge_client *client,
+        tcpbridge_options *opts, int id) {
+    client->address = opts->connection_endpoints[id];
     client->server_socket = bind_socket(
-            opts->first_address_str,
-            opts->first_port,
+            client->address->address_str,
+            client->address->port,
             opts->use_ipv6);
 
     register_server_callback(evbase, client);
@@ -143,7 +146,7 @@ void eventcb(struct bufferevent *bev, short error, void *ctx);
 void new_client_cb(evutil_socket_t sock1, short what, void *arg) {
     bridge_client *client = (bridge_client*) arg;
 
-    int cltsock = accept(sock1);
+    int cltsock = accept(sock1, NULL, NULL);
     if (cltsock < 0) {
         err(errno, "accept");
     } else if (cltsock > FD_SETSIZE) {
@@ -173,15 +176,18 @@ void writecb(struct bufferevent *bev, void *ctx) {
 }
 
 void eventcb(struct bufferevent *bev, short error, void *ctx) {
-    bridge_client *inf = (bridge_client*) ctx;
+    bridge_client *client = (bridge_client*) ctx;
 
     if (events & BEV_EVENT_EOF) {
-        errx(0, "Connection closed.");
+        errx(0, "Connection closed on %s:%d.",
+                client->address->address_str,
+                client->address->port);
     }
     if (events & BEV_EVENT_ERROR) {
-        printf("Got an error from %s: %s\n",
-            inf->name, evutil_socket_error_to_string(EVUTIL_SOCKET_ERROR()));
-        finished = 1;
+        errx(errno, "Got an error from %s:%d: %s\n",
+            client->address->address_str,
+            client->address->port,
+            evutil_socket_error_to_string(EVUTIL_SOCKET_ERROR()));
     }
 }
 
