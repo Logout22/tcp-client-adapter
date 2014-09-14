@@ -35,7 +35,7 @@ tcpbridge_options *allocate_tcpbridge_options() {
     result->use_ipv6 = false;
     int i;
     for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
-        result->connection_endpoints = allocate_tcpbridge_address();
+        result->connection_endpoints[i] = allocate_tcpbridge_address();
     }
     return result;
 }
@@ -44,7 +44,7 @@ void free_tcpbridge_options(void *t) {
     tcpbridge_options *target = (tcpbridge_options *) t;
     int i;
     for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
-        free_tcpbridge_address(target->connection_endpoints);
+        free_tcpbridge_address(target->connection_endpoints[i]);
     }
     free(target);
 }

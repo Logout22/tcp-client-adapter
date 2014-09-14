@@ -1,5 +1,6 @@
 #include "freeatexit.h"
 #include <stdlib.h>
+#include <assert.h>
 
 static freeable_object *objects_to_free = NULL;
 

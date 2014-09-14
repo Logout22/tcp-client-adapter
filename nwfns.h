@@ -11,6 +11,7 @@ typedef struct bridge_client {
     int server_socket;
     struct bufferevent *client_bev;
     // reference pointers:
+    struct event_base *evbase;
     tcpbridge_address *address;
     struct bridge_client *opposite_client;
 } bridge_client;

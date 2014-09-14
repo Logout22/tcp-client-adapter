@@ -9,7 +9,7 @@ typedef struct tcpbridge_address {
     char *conn_id_string;
     char *address_str;
     uint16_t port;
-}
+} tcpbridge_address;
 
 tcpbridge_address *allocate_tcpbridge_address();
 void free_tcpbridge_address(void *t);
