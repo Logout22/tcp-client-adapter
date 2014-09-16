@@ -40,9 +40,6 @@ void free_bridge_client(void *arg) {
 }
 
 void connect_clients(struct event_base *evbase, tcpbridge_options *opts);
-void setup_client(
-        struct event_base *evbase, bridge_client *client,
-        tcpbridge_options *opts, int id);
 
 struct event_base *setup_network(tcpbridge_options *opts) {
     struct event_base *evbase = event_base_new();
@@ -54,6 +51,10 @@ struct event_base *setup_network(tcpbridge_options *opts) {
     return evbase;
 }
 
+void setup_client(
+        bridge_client *client,
+        struct event_base *evbase, tcpbridge_address *address, bool use_ipv6);
+
 void connect_clients(struct event_base *evbase, tcpbridge_options *opts) {
     bridge_client *client1 = allocate_bridge_client();
     free_object_at_exit(free_bridge_client, client1);
@@ -63,23 +64,25 @@ void connect_clients(struct event_base *evbase, tcpbridge_options *opts) {
     client1->opposite_client = client2;
     client2->opposite_client = client1;
 
-    setup_client(evbase, client1, opts, 0);
-    setup_client(evbase, client2, opts, 1);
+    setup_client(client1,
+        evbase, opts->connection_endpoints[0], opts->use_ipv6);
+    setup_client(client2,
+        evbase, opts->connection_endpoints[1], opts->use_ipv6);
 }
 
 int bind_socket(char const *address, uint16_t const port, bool use_ipv6);
 void register_server_callback(bridge_client *client);
 
 void setup_client(
-        struct event_base *evbase, bridge_client *client,
-        tcpbridge_options *opts, int id) {
+        bridge_client *client,
+        struct event_base *evbase, tcpbridge_address *address, bool use_ipv6) {
     client->evbase = evbase;
-    client->address = opts->connection_endpoints[id];
+    client->address = address;
 
     client->server_socket = bind_socket(
-            client->address->address_str,
-            client->address->port,
-            opts->use_ipv6);
+            address->address_str,
+            address->port,
+            use_ipv6);
 
     register_server_callback(client);
 }
