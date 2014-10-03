@@ -77,8 +77,8 @@ char *usage_text(char const *progname) {
     "-q, --second-port\tThe second TCP port to listen on\n"
     "-6\t\t\tUse IPv6\n"
     "\n"
-    "-p and -q are required.\n"
-    ,progname);
+    "-p and -q are required.\n",
+    progname);
     assert(chars_written > 0);
     free_object_at_exit(free, result);
     return result;

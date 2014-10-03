@@ -51,85 +51,122 @@ struct event_base *setup_network(tcpbridge_options *opts) {
     return evbase;
 }
 
-void setup_client(
-        bridge_client *client,
-        struct event_base *evbase, tcpbridge_address *address, bool use_ipv6);
-
-void connect_clients(struct event_base *evbase, tcpbridge_options *opts) {
-    bridge_client *client1 = allocate_bridge_client();
-    free_object_at_exit(free_bridge_client, client1);
-    bridge_client *client2 = allocate_bridge_client();
-    free_object_at_exit(free_bridge_client, client2);
-
-    client1->opposite_client = client2;
-    client2->opposite_client = client1;
-
-    setup_client(client1,
-        evbase, opts->connection_endpoints[0], opts->use_ipv6);
-    setup_client(client2,
-        evbase, opts->connection_endpoints[1], opts->use_ipv6);
-}
-
-int bind_socket(char const *address, uint16_t const port, bool use_ipv6);
+int establish_socket(tcpbridge_address *address, bool use_ipv6);
 void register_server_callback(bridge_client *client);
 
-void setup_client(
-        bridge_client *client,
-        struct event_base *evbase, tcpbridge_address *address, bool use_ipv6) {
-    client->evbase = evbase;
-    client->address = address;
+void connect_clients(struct event_base *evbase, tcpbridge_options *opts) {
+    bridge_client client[NUMBER_OF_ENDPOINTS];
 
-    client->server_socket = bind_socket(
-            address->address_str,
-            address->port,
-            use_ipv6);
+    int i;
+    for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
+        client[i] = allocate_bridge_client();
+        free_object_at_exit(free_bridge_client, client[i]);
+    }
 
-    register_server_callback(client);
+    // NOTE: change this when NUMBER_OF_ENDPOINTS changes
+    client[0]->opposite_client = client[1];
+    client[1]->opposite_client = client[0];
+
+    for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
+        tcpbridge_address *address = opts->connection_endpoints[i];
+
+        client[i]->evbase = evbase;
+        client[i]->address = address;
+
+        client[i]->server_socket = bind_socket(
+                address->address_str,
+                address->port,
+                opts->use_ipv6);
+
+        register_server_callback(client[i]);
+    }
 }
 
-int bind_socket(char const *address, uint16_t const port, bool use_ipv6) {
-    struct addrinfo *addresses = NULL;
+struct addrinfo *lookup_address(tcpbridge_address *address, bool use_ipv6);
+int create_socket(struct addrinfo *address);
+bool bind_socket(int sock, struct addrinfo *address);
+
+int establish_socket(tcpbridge_address *address, bool use_ipv6) {
+    int sock;
+
+    struct addrinfo *addresses = lookup_address(address, use_ipv6);
+    while (addresses) {
+        sock = create_socket(current_ai);
+        if (sock < 0) {
+            continue;
+        }
+        if (bind_socket(sock, current_ai)) {
+            break;
+        }
+        addresses = addresses->ai_next;
+    }
+
+    if (addresses == NULL) {
+        errx(ENOENT, "Could not bind to any address, exiting");
+    }
+
+    return sock;
+}
+
+struct addrinfo *lookup_address(tcpbridge_address *address, bool use_ipv6) {
+    struct addrinfo *result = NULL;
     struct addrinfo hints = {
         .ai_socktype = SOCK_STREAM,
         .ai_family = use_ipv6 ? AF_INET6 : AF_INET,
     };
     char port_str[6];
-    snprintf(port_str, 6, "%d", port);
+    snprintf(port_str, 6, "%d", address->port);
     int res;
-    if ((res = getaddrinfo(address, port_str, &hints, &addresses)) != 0) {
+    if ((res = getaddrinfo(
+                    address->address_str,
+                    port_str,
+                    &hints,
+                    &result)) != 0) {
         fprintf(stderr, "getaddrinfo failed: %s\n", gai_strerror(res));
         exit(EXIT_FAILURE);
     }
+    free_object_at_exit(tcpbridge_free_addrinfo, result);
 
-    int sock = -1;
-    struct addrinfo *current_ai;
-    for (current_ai = addresses;
-            current_ai;
-            current_ai = current_ai->ai_next) {
-        sock = socket(
-                current_ai->ai_family,
-                current_ai->ai_socktype,
-                current_ai->ai_protocol);
-        if (sock < 0) {
-            continue;
-        }
+    return result;
+}
 
-        if (bind(sock, current_ai->ai_addr, current_ai->ai_addrlen) == 0) {
-            res = listen(sock, 50);
-            assert(res == 0);
-            break;
-        } else {
-            warn("bind() failed");
-        }
+int create_socket(struct addrinfo *address) {
+    int sock = socket(
+            address->ai_family,
+            address->ai_socktype,
+            address->ai_protocol);
+    if (sock < 0) {
+        warn("socket() failed: family %d, type %d, protocol %d",
+                address->ai_family,
+                address->ai_socktype,
+                address->ai_protocol);
     }
-
-    freeaddrinfo(addresses);
-
-    if (!current_ai) {
-        errx(ENOENT, "Could not bind to any address, exiting");
-    }
-
     return sock;
+}
+
+bool bind_socket(int sock, struct addrinfo *address) {
+    if (bind(sock, address->ai_addr, address->ai_addrlen) != 0) {
+        char address_dump[INET6_ADDRSTRLEN];
+        /* NOTE: I assume your operating system follows the address hints.
+         * If it does not, you will have to improve
+         * this error handling section.
+         */
+        char *check_ptr = inet_ntop(
+                address->ai_family,
+                ((struct sockaddr_in*) address->ai_addr)->sin_addr->s_addr,
+                address_dump, INET6_ADDRSTRLEN);
+        if (check_ptr != address_dump) {
+            err(errno, "Could not convert IP address");
+        }
+        warn("bind() failed on %s:%s", address_dump, port_str);
+        free(address_dump);
+        return false;
+    }
+
+    if (listen(sock, 50) != 0) {
+        err(errno, "listen() failed");
+    }
+    return true;
 }
 
 void new_client_cb(evutil_socket_t sock1, short what, void *s2);
@@ -199,6 +236,10 @@ void eventcb(struct bufferevent *bev, short error, void *ctx) {
             client->address->port,
             evutil_socket_error_to_string(EVUTIL_SOCKET_ERROR()));
     }
+}
+
+void tcpbridge_free_addrinfo(void *info) {
+    freeaddrinfo((struct addrinfo*) info);
 }
 
 void tcpbridge_free_eventbase(void *base) {

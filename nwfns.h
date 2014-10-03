@@ -20,7 +20,6 @@ bridge_client *allocate_bridge_client();
 void free_bridge_client(void *arg);
 
 struct event_base *setup_network(tcpbridge_options *opts);
-int bind_socket(char const *address, uint16_t const port, bool use_ipv6);
 
 #endif
 

@@ -6,7 +6,6 @@
 #include <stdbool.h>
 
 typedef struct tcpbridge_address {
-    char *conn_id_string;
     char *address_str;
     uint16_t port;
 } tcpbridge_address;
