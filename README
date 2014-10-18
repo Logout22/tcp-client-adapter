@@ -20,7 +20,14 @@ this little tool to fill the gap.
 
 It is written in C and so far designed for UNIX systems only.
 
-TODO add reference to installation notes
+Refer to INSTALL for an explanation of the standard GNU build process
+that this program adheres to.
+On the 'dev' or 'sketch' branches, do not forget to run:
+
+    autoreconf -iv
+
+before the first run of configure and whenever you changed
+either configure.ac or Makefile.am.
 
 Feel free to contact me: You can find my e-mail address in the
 commit history (e.g. execute git log).
