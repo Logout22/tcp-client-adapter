@@ -10,10 +10,13 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <arpa/inet.h>
 
 #include <event2/bufferevent.h>
 
 #include "freeatexit.h"
+
+#define PORT_STR_LEN 6
 
 void tcpbridge_free_eventbase(void *base);
 void tcpbridge_free_event(void *ev);
@@ -55,7 +58,7 @@ int establish_socket(tcpbridge_address *address, bool use_ipv6);
 void register_server_callback(bridge_client *client);
 
 void connect_clients(struct event_base *evbase, tcpbridge_options *opts) {
-    bridge_client client[NUMBER_OF_ENDPOINTS];
+    bridge_client *client[NUMBER_OF_ENDPOINTS];
 
     int i;
     for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
@@ -73,10 +76,7 @@ void connect_clients(struct event_base *evbase, tcpbridge_options *opts) {
         client[i]->evbase = evbase;
         client[i]->address = address;
 
-        client[i]->server_socket = bind_socket(
-                address->address_str,
-                address->port,
-                opts->use_ipv6);
+        client[i]->server_socket = establish_socket(address, opts->use_ipv6);
 
         register_server_callback(client[i]);
     }
@@ -84,18 +84,22 @@ void connect_clients(struct event_base *evbase, tcpbridge_options *opts) {
 
 struct addrinfo *lookup_address(tcpbridge_address *address, bool use_ipv6);
 int create_socket(struct addrinfo *address);
+void show_socket_warning(struct addrinfo *address);
 bool bind_socket(int sock, struct addrinfo *address);
+void show_bind_warning(struct addrinfo *address);
 
 int establish_socket(tcpbridge_address *address, bool use_ipv6) {
     int sock;
 
     struct addrinfo *addresses = lookup_address(address, use_ipv6);
     while (addresses) {
-        sock = create_socket(current_ai);
+        sock = create_socket(addresses);
         if (sock < 0) {
+            show_socket_warning(addresses);
             continue;
         }
-        if (bind_socket(sock, current_ai)) {
+        if (bind_socket(sock, addresses)) {
+            show_bind_warning(addresses);
             break;
         }
         addresses = addresses->ai_next;
@@ -108,14 +112,16 @@ int establish_socket(tcpbridge_address *address, bool use_ipv6) {
     return sock;
 }
 
+void tcpbridge_free_addrinfo(void *info);
+
 struct addrinfo *lookup_address(tcpbridge_address *address, bool use_ipv6) {
     struct addrinfo *result = NULL;
     struct addrinfo hints = {
         .ai_socktype = SOCK_STREAM,
         .ai_family = use_ipv6 ? AF_INET6 : AF_INET,
     };
-    char port_str[6];
-    snprintf(port_str, 6, "%d", address->port);
+    char port_str[PORT_STR_LEN];
+    snprintf(port_str, PORT_STR_LEN, "%d", address->port);
     int res;
     if ((res = getaddrinfo(
                     address->address_str,
@@ -131,35 +137,21 @@ struct addrinfo *lookup_address(tcpbridge_address *address, bool use_ipv6) {
 }
 
 int create_socket(struct addrinfo *address) {
-    int sock = socket(
+    return socket(
             address->ai_family,
             address->ai_socktype,
             address->ai_protocol);
-    if (sock < 0) {
-        warn("socket() failed: family %d, type %d, protocol %d",
-                address->ai_family,
-                address->ai_socktype,
-                address->ai_protocol);
-    }
-    return sock;
+}
+
+void show_socket_warning(struct addrinfo *address) {
+    warn("socket() failed: family %d, type %d, protocol %d",
+            address->ai_family,
+            address->ai_socktype,
+            address->ai_protocol);
 }
 
 bool bind_socket(int sock, struct addrinfo *address) {
     if (bind(sock, address->ai_addr, address->ai_addrlen) != 0) {
-        char address_dump[INET6_ADDRSTRLEN];
-        /* NOTE: I assume your operating system follows the address hints.
-         * If it does not, you will have to improve
-         * this error handling section.
-         */
-        char *check_ptr = inet_ntop(
-                address->ai_family,
-                ((struct sockaddr_in*) address->ai_addr)->sin_addr->s_addr,
-                address_dump, INET6_ADDRSTRLEN);
-        if (check_ptr != address_dump) {
-            err(errno, "Could not convert IP address");
-        }
-        warn("bind() failed on %s:%s", address_dump, port_str);
-        free(address_dump);
         return false;
     }
 
@@ -167,6 +159,48 @@ bool bind_socket(int sock, struct addrinfo *address) {
         err(errno, "listen() failed");
     }
     return true;
+}
+
+char const *convert_address(struct addrinfo *address, char *dest);
+void convert_port(struct addrinfo *address, char *dest);
+
+void show_bind_warning(struct addrinfo *address) {
+    char address_dump[INET6_ADDRSTRLEN];
+    if (convert_address(address, address_dump) != address_dump) {
+        err(errno, "Could not convert IP address to string");
+    }
+    char port_str[PORT_STR_LEN];
+    convert_port(address, port_str);
+
+    warn("bind() failed on %s:%s", address_dump, port_str);
+}
+
+char const *convert_address(struct addrinfo *address, char *dest) {
+    char const *check_ptr = NULL;
+    if (address->ai_family == AF_INET) {
+        check_ptr = inet_ntop(
+                address->ai_family,
+                &((struct sockaddr_in*) address->ai_addr)->sin_addr.s_addr,
+                dest, INET6_ADDRSTRLEN);
+    } else if (address->ai_family == AF_INET6) {
+        check_ptr = inet_ntop(
+                address->ai_family,
+                &((struct sockaddr_in6*) address->ai_addr)->sin6_addr.s6_addr,
+                dest, INET6_ADDRSTRLEN);
+    }
+    return check_ptr;
+}
+
+void convert_port(struct addrinfo *address, char *dest) {
+    int written;
+    if (address->ai_family == AF_INET) {
+        written = snprintf(dest, PORT_STR_LEN, "%d",
+                ((struct sockaddr_in*) address->ai_addr)->sin_port);
+    } else if (address->ai_family == AF_INET6) {
+        written = snprintf(dest, PORT_STR_LEN, "%d",
+                ((struct sockaddr_in6*) address->ai_addr)->sin6_port);
+    }
+    assert(written > 0);
 }
 
 void new_client_cb(evutil_socket_t sock1, short what, void *s2);

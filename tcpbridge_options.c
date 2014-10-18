@@ -16,7 +16,6 @@
 tcpbridge_address *allocate_tcpbridge_address() {
     ALLOCATE(tcpbridge_address, result);
 
-    result->conn_id_string = NULL;
     result->address_str = NULL;
     result->port = 0;
     return result;
@@ -25,7 +24,6 @@ tcpbridge_address *allocate_tcpbridge_address() {
 void free_tcpbridge_address(void *t) {
     tcpbridge_address *target = (tcpbridge_address*) t;
     free(target->address_str);
-    free(target->conn_id_string);
     free(target);
 }
 
