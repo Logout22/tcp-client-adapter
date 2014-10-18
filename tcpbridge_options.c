@@ -84,14 +84,10 @@ char *usage_text(char const *progname) {
 
 bool get_port(char const *arg, uint16_t *out_port) {
     char *check_ptr;
-    // base autodetect -> also accepts oct / hex values
     long conv_result = strtol(arg, &check_ptr, 0);
-    /* either it did not convert the string at all
-       or the result is not within TCP port range */
     if (arg == check_ptr || conv_result <= 0 || conv_result > 65535) {
         return false;
     }
-    // safe to cast now
     *out_port = (uint16_t) conv_result;
     return true;
 }
@@ -129,7 +125,7 @@ tcpbridge_options *evaluate_options(int argc, char *argv[]) {
         }
     }
 
-    // check requirements and set defaults where applicable
+    /* check requirements and set defaults where applicable */
     int i;
     for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
         tcpbridge_address *current_ep = result->connection_endpoints[i];

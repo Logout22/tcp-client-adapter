@@ -10,5 +10,5 @@
     TYPE *VAR = (TYPE*) calloc(1, sizeof(TYPE)); \
     assert(VAR != NULL)
 
-#endif //__COMMON_H__
+#endif
 

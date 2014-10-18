@@ -10,7 +10,7 @@ void free_object_at_exit(void (*ptr_free_fn)(void*), void *object) {
     new_obj->ptr_free_fn = ptr_free_fn;
     new_obj->object = object;
 
-    // prepend to free objects in reverse order of allocation
+    /* prepend to free objects in reverse order of allocation */
     new_obj->next = objects_to_free;
     objects_to_free = new_obj;
 }

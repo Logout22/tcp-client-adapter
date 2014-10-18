@@ -37,7 +37,6 @@ void free_bridge_client(void *arg) {
 
     bufferevent_free(client->client_bev);
     close(client->server_socket);
-    // no need to free reference pointers here
 
     free(client);
 }
@@ -54,7 +53,6 @@ struct event_base *setup_network(tcpbridge_options *opts) {
     return evbase;
 }
 
-int establish_socket(tcpbridge_address *address, bool use_ipv6);
 void register_server_callback(bridge_client *client);
 
 void connect_clients(struct event_base *evbase, tcpbridge_options *opts) {
@@ -66,7 +64,7 @@ void connect_clients(struct event_base *evbase, tcpbridge_options *opts) {
         free_object_at_exit(free_bridge_client, client[i]);
     }
 
-    // NOTE: change this when NUMBER_OF_ENDPOINTS changes
+    /* NOTE: change this when NUMBER_OF_ENDPOINTS changes */
     client[0]->opposite_client = client[1];
     client[1]->opposite_client = client[0];
 
@@ -116,10 +114,10 @@ void tcpbridge_free_addrinfo(void *info);
 
 struct addrinfo *lookup_address(tcpbridge_address *address, bool use_ipv6) {
     struct addrinfo *result = NULL;
-    struct addrinfo hints = {
-        .ai_socktype = SOCK_STREAM,
-        .ai_family = use_ipv6 ? AF_INET6 : AF_INET,
-    };
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_family = use_ipv6 ? AF_INET6 : AF_INET;
     char port_str[PORT_STR_LEN];
     snprintf(port_str, PORT_STR_LEN, "%d", address->port);
     int res;
@@ -192,7 +190,7 @@ char const *convert_address(struct addrinfo *address, char *dest) {
 }
 
 void convert_port(struct addrinfo *address, char *dest) {
-    int written;
+    int written = 0;
     if (address->ai_family == AF_INET) {
         written = snprintf(dest, PORT_STR_LEN, "%d",
                 ((struct sockaddr_in*) address->ai_addr)->sin_port);
@@ -224,6 +222,7 @@ void eventcb(struct bufferevent *bev, short error, void *ctx);
 void new_client_cb(evutil_socket_t sock1, short what, void *arg) {
     bridge_client *client = (bridge_client*) arg;
 
+    assert(what == EV_READ);
     int cltsock = accept(sock1, NULL, NULL);
     if (cltsock < 0) {
         err(errno, "accept");
@@ -258,6 +257,7 @@ void writecb(struct bufferevent *bev, void *ctx) {
 
 void eventcb(struct bufferevent *bev, short error, void *ctx) {
     bridge_client *client = (bridge_client*) ctx;
+    assert(client->client_bev == bev);
 
     if (error & BEV_EVENT_EOF) {
         errx(0, "Connection closed on %s:%d.",

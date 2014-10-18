@@ -10,7 +10,7 @@ typedef struct tcpbridge_address {
     uint16_t port;
 } tcpbridge_address;
 
-tcpbridge_address *allocate_tcpbridge_address();
+tcpbridge_address *allocate_tcpbridge_address(void);
 void free_tcpbridge_address(void *t);
 
 #define NUMBER_OF_ENDPOINTS 2
@@ -19,11 +19,11 @@ typedef struct tcpbridge_options {
     tcpbridge_address *connection_endpoints[NUMBER_OF_ENDPOINTS];
 } tcpbridge_options;
 
-tcpbridge_options *allocate_tcpbridge_options();
+tcpbridge_options *allocate_tcpbridge_options(void);
 void free_tcpbridge_options(void *t);
 
 char *usage_text(char const *progname);
 tcpbridge_options *evaluate_options(int argc, char *argv[]);
 
-#endif //__TCPBRIDGE_OPTIONS_H__
+#endif
 

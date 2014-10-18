@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-void register_signal_handler();
+void register_signal_handler(void);
 
-#endif //__TCPBRIDGE_SIGNAL_H__
+#endif
 
