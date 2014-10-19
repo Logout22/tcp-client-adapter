@@ -118,23 +118,18 @@ void test_all_values(void) {
     g_assert(result->connection_endpoints[1]->port == 8);
 }
 
-void test_signal(int signal, bool success) {
+void test_signal(int signal) {
     if (g_test_subprocess()) {
         raise(signal);
     }
 
     g_test_trap_subprocess(NULL, 0, 0);
-    if (success) {
-        g_test_trap_assert_passed();
-    } else {
-        g_test_trap_assert_failed();
-    }
+    g_test_trap_assert_passed();
 }
 
-void test_sighup(void) { test_signal(SIGHUP, true); }
-void test_sigterm(void) { test_signal(SIGTERM, true); }
-void test_sigint(void) { test_signal(SIGINT, true); }
-void test_sigusr1(void) { test_signal(SIGUSR1, false); }
+void test_sighup(void) { test_signal(SIGHUP); }
+void test_sigterm(void) { test_signal(SIGTERM); }
+void test_sigint(void) { test_signal(SIGINT); }
 
 void test_bind(char const *address_str, uint16_t const port, bool use_ipv6) {
     tcpbridge_address *address = allocate_tcpbridge_address();
@@ -211,7 +206,6 @@ int main(int argc, char *argv[]) {
     g_test_add_func("/signals/sighup", test_sighup);
     g_test_add_func("/signals/sigterm", test_sigterm);
     g_test_add_func("/signals/sigint", test_sigint);
-    g_test_add_func("/signals/sigusr1", test_sigusr1);
     g_test_add_func("/bind/test_bind_local_v4", test_bind_local_v4);
     g_test_add_func("/bind/test_bind_local_v6", test_bind_local_v6);
     g_test_add_func("/bind/test_bind_local_root_v4", test_bind_local_root_v4);
