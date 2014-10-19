@@ -165,7 +165,6 @@ void test_bind_local_root(bool use_ipv6) {
 
     if (g_test_subprocess()) {
         test_bind("localhost", 6, use_ipv6);
-        exit(0);
     }
 
     g_test_trap_subprocess(NULL, 0, 0);
@@ -180,7 +179,6 @@ void test_bind_nonexisting(bool use_ipv6) {
 
     if (g_test_subprocess()) {
         test_bind(host1, 6, use_ipv6);
-        exit(0);
     }
 
     g_test_trap_subprocess(NULL, 0, 0);

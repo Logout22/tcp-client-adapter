@@ -23,13 +23,22 @@ AC_TYPE_UINT16_T
 # Checks for library functions.
 AC_CHECK_FUNCS([atexit socket strdup strtol])
 
-# Include unit test?
+# Configure options
 AC_ARG_ENABLE([tests],
     [AS_HELP_STRING([--enable-tests],
         [compile and run unit and integration tests (requires GLib)])],
     [PKG_CHECK_MODULES([GLIB], [glib-2.0]); tests=true],
     [tests=false])
 AM_CONDITIONAL([TESTS], [test x$tests = xtrue])
+
+AC_ARG_ENABLE([coverage],
+    [AS_HELP_STRING([--enable-coverage],
+        [compile unit and integration tests with gcov information, run gcov])],
+    [ #check if gcov is available
+      #check if bash is available
+    coverage=true],
+    [coverage=false])
+AM_CONDITIONAL([COVERAGE], [test x$coverage = xtrue])
 
 # Automake setup
 AC_CONFIG_FILES([Makefile])

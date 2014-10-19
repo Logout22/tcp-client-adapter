@@ -7,11 +7,20 @@ tcpbridge_CFLAGS = $(LIBEVENT_CFLAGS)
 tcpbridge_LDADD = $(LIBEVENT_LIBS)
 
 if TESTS
-TESTS = unittests
-check_PROGRAMS = $(TESTS)
+TESTS = $(check_PROGRAMS)
+check_PROGRAMS = unittests
 
 unittests_SOURCES = unittests.c $(SOURCES)
 unittests_CFLAGS = $(LIBEVENT_CFLAGS) $(GLIB_CFLAGS)
 unittests_LDADD = $(LIBEVENT_LIBS) $(GLIB_LIBS)
+
+if COVERAGE
+unittests_CFLAGS += -fprofile-arcs -ftest-coverage
+
+coverage: check
+	./run_gcov.sh unittests $(unittests_SOURCES)
+	##./run_gcov.sh integrationtests $(integrationtests_SOURCES)
+endif
+
 endif
 
