@@ -4,6 +4,7 @@
 #include <string.h>
 #include <signal.h>
 #include <err.h>
+#include <event2/event.h>
 
 #include "tcpbridge_options.h"
 #include "tcpbridge_signal.h"
@@ -183,11 +184,47 @@ void test_bind_nonexisting(bool use_ipv6) {
 
     g_test_trap_subprocess(NULL, 0, 0);
     g_test_trap_assert_failed();
-    g_test_trap_assert_stderr("*getaddrinfo failed*");
 }
 
 void test_bind_nonexisting_v4(void) { test_bind_nonexisting(false); }
 void test_bind_nonexisting_v6(void) { test_bind_nonexisting(true); }
+
+void test_initialise_clients(void) {
+    bridge_client *clients[NUMBER_OF_ENDPOINTS];
+    struct event_base *evbase = (struct event_base*) 12;
+
+    tcpbridge_options *opts = allocate_tcpbridge_options();
+    opts->use_ipv6 = true;
+    int i;
+    for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
+        opts->connection_endpoints[i]->port = i + 10;
+    }
+
+    initialise_clients(clients, evbase, opts);
+
+    g_assert_true(clients[0]->opposite_client == clients[1]);
+    g_assert_true(clients[1]->opposite_client == clients[0]);
+    for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
+        g_assert_true(clients[i]->use_ipv6);
+        g_assert_true(clients[i]->address->port == i + 10);
+        g_assert_true(clients[i]->evbase == (struct event_base*) 12);
+    }
+}
+
+/* Disabled; enable when Libevent 2.1 becomes stable.
+ * Libevent 2.1 provides event_base_get_num_events(),
+ * which is required for this test.
+void test_register_server_callback() {
+    struct event_base *evbase = event_base_new();
+
+    register_server_callback();
+
+    g_assert_true(
+            event_base_get_num_events(evbase, EVENT_BASE_COUNT_ACTIVE) == 1);
+
+    event_base_free(evbase);
+}
+*/
 
 int main(int argc, char *argv[]) {
     atexit(free_atexit);
@@ -204,14 +241,25 @@ int main(int argc, char *argv[]) {
     g_test_add_func("/signals/sighup", test_sighup);
     g_test_add_func("/signals/sigterm", test_sigterm);
     g_test_add_func("/signals/sigint", test_sigint);
-    g_test_add_func("/bind/test_bind_local_v4", test_bind_local_v4);
-    g_test_add_func("/bind/test_bind_local_v6", test_bind_local_v6);
-    g_test_add_func("/bind/test_bind_local_root_v4", test_bind_local_root_v4);
-    g_test_add_func("/bind/test_bind_local_root_v6", test_bind_local_root_v6);
     g_test_add_func(
-            "/bind/test_bind_nonexisting_v4", test_bind_nonexisting_v4);
+            "/nw/bind/test_bind_local_v4", test_bind_local_v4);
     g_test_add_func(
-            "/bind/test_bind_nonexisting_v6", test_bind_nonexisting_v6);
+            "/nw/bind/test_bind_local_v6", test_bind_local_v6);
+    g_test_add_func(
+            "/nw/bind/test_bind_local_root_v4", test_bind_local_root_v4);
+    g_test_add_func(
+            "/nw/bind/test_bind_local_root_v6", test_bind_local_root_v6);
+    g_test_add_func(
+            "/nw/bind/test_bind_nonexisting_v4", test_bind_nonexisting_v4);
+    g_test_add_func(
+            "/nw/bind/test_bind_nonexisting_v6", test_bind_nonexisting_v6);
+    g_test_add_func(
+            "/nw/initialise_clients", test_initialise_clients);
+    /* Disabled (see above)
+    g_test_add_func(
+            "/nw/register_server_callback", test_register_server_callback);
+            */
+
     return g_test_run();
 }
 

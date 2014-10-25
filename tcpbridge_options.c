@@ -15,9 +15,6 @@
 
 tcpbridge_address *allocate_tcpbridge_address() {
     ALLOCATE(tcpbridge_address, result);
-
-    result->address_str = NULL;
-    result->port = 0;
     return result;
 }
 
@@ -30,7 +27,6 @@ void free_tcpbridge_address(void *t) {
 tcpbridge_options *allocate_tcpbridge_options() {
     ALLOCATE(tcpbridge_options, result);
 
-    result->use_ipv6 = false;
     int i;
     for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
         result->connection_endpoints[i] = allocate_tcpbridge_address();

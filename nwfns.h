@@ -14,6 +14,7 @@ typedef struct bridge_client {
     /* reference pointers: */
     struct event_base *evbase;
     tcpbridge_address *address;
+    bool use_ipv6;
     struct bridge_client *opposite_client;
 } bridge_client;
 

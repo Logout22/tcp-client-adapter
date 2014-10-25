@@ -25,9 +25,6 @@ bridge_client *allocate_bridge_client() {
     ALLOCATE(bridge_client, result);
 
     result->server_socket = -1;
-    result->client_bev = NULL;
-    result->address = NULL;
-    result->opposite_client = NULL;
 
     return result;
 }
@@ -35,48 +32,61 @@ bridge_client *allocate_bridge_client() {
 void free_bridge_client(void *arg) {
     bridge_client *client = (bridge_client*) arg;
 
-    bufferevent_free(client->client_bev);
-    close(client->server_socket);
+    if (client->client_bev) {
+        bufferevent_free(client->client_bev);
+    }
+    if (client->server_socket >= 0) {
+        close(client->server_socket);
+    }
 
     free(client);
 }
 
-void connect_clients(struct event_base *evbase, tcpbridge_options *opts);
+void initialise_clients(bridge_client **clients,
+        struct event_base *evbase, tcpbridge_options *opts);
+void connect_clients(bridge_client **clients);
 
 struct event_base *setup_network(tcpbridge_options *opts) {
     struct event_base *evbase = event_base_new();
     assert(evbase != NULL);
     free_object_at_exit(tcpbridge_free_eventbase, evbase);
 
-    connect_clients(evbase, opts);
+    bridge_client *clients[NUMBER_OF_ENDPOINTS];
+    initialise_clients(clients, evbase, opts);
+    connect_clients(clients);
 
     return evbase;
 }
 
-void register_server_callback(bridge_client *client);
-
-void connect_clients(struct event_base *evbase, tcpbridge_options *opts) {
-    bridge_client *client[NUMBER_OF_ENDPOINTS];
-
+void initialise_clients(bridge_client **clients,
+        struct event_base *evbase, tcpbridge_options *opts) {
     int i;
     for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
-        client[i] = allocate_bridge_client();
-        free_object_at_exit(free_bridge_client, client[i]);
+        clients[i] = allocate_bridge_client();
+        free_object_at_exit(free_bridge_client, clients[i]);
     }
 
     /* NOTE: change this when NUMBER_OF_ENDPOINTS changes */
-    client[0]->opposite_client = client[1];
-    client[1]->opposite_client = client[0];
+    clients[0]->opposite_client = clients[1];
+    clients[1]->opposite_client = clients[0];
+    /* END NOTE */
 
     for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
-        tcpbridge_address *address = opts->connection_endpoints[i];
+        clients[i]->evbase = evbase;
+        clients[i]->address = opts->connection_endpoints[i];
+        clients[i]->use_ipv6 = opts->use_ipv6;
+    }
+}
 
-        client[i]->evbase = evbase;
-        client[i]->address = address;
+void register_server_callback(bridge_client *client);
 
-        client[i]->server_socket = establish_socket(address, opts->use_ipv6);
+void connect_clients(bridge_client **clients) {
+    int i;
 
-        register_server_callback(client[i]);
+    for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
+        clients[i]->server_socket = establish_socket(
+                clients[i]->address, clients[i]->use_ipv6);
+        register_server_callback(clients[i]);
     }
 }
 
@@ -156,6 +166,8 @@ bool bind_socket(int sock, struct addrinfo *address) {
     if (listen(sock, 50) != 0) {
         err(errno, "listen() failed");
     }
+
+    evutil_make_socket_nonblocking(sock);
     return true;
 }
 
@@ -204,7 +216,6 @@ void convert_port(struct addrinfo *address, char *dest) {
 void new_client_cb(evutil_socket_t sock1, short what, void *s2);
 
 void register_server_callback(bridge_client *client) {
-    evutil_make_socket_nonblocking(client->server_socket);
     struct event *sock_event = event_new(
             client->evbase,
             client->server_socket,

@@ -11,7 +11,7 @@ AC_CONFIG_HEADERS([config.h])
 AC_PROG_CC
 
 # Checks for libraries.
-PKG_CHECK_MODULES([LIBEVENT], [libevent])
+PKG_CHECK_MODULES([LIBEVENT], [libevent >= 2.0])
 
 # Checks for header files.
 AC_CHECK_HEADERS([inttypes.h netdb.h stdlib.h string.h sys/socket.h unistd.h])
@@ -27,16 +27,14 @@ AC_CHECK_FUNCS([atexit socket strdup strtol])
 AC_ARG_ENABLE([tests],
     [AS_HELP_STRING([--enable-tests],
         [compile and run unit and integration tests (requires GLib)])],
-    [PKG_CHECK_MODULES([GLIB], [glib-2.0]); tests=true],
+    [PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.42]); tests=true],
     [tests=false])
 AM_CONDITIONAL([TESTS], [test x$tests = xtrue])
 
 AC_ARG_ENABLE([coverage],
     [AS_HELP_STRING([--enable-coverage],
         [compile unit and integration tests with gcov information, run gcov])],
-    [ #check if gcov is available
-      #check if bash is available
-    coverage=true],
+    [coverage=true],
     [coverage=false])
 AM_CONDITIONAL([COVERAGE], [test x$coverage = xtrue])
 
@@ -44,3 +42,4 @@ AM_CONDITIONAL([COVERAGE], [test x$coverage = xtrue])
 AC_CONFIG_FILES([Makefile])
 
 AC_OUTPUT
+
