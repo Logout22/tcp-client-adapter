@@ -69,7 +69,9 @@ char *usage_text(char const *progname) {
     "-p, --first-port\tThe first TCP port to listen on\n"
     "-b, --second-address\tThe second address to listen on (host or IP)\n"
     "-q, --second-port\tThe second TCP port to listen on\n"
+#ifdef HAVE_IPV6
     "-6\t\t\tUse IPv6\n"
+#endif
     "\n"
     "-p and -q are required.\n",
     progname);
@@ -95,8 +97,13 @@ tcpbridge_options *evaluate_options(int argc, char *argv[]) {
 
     optind = 1;
     int selected_option;
+#ifdef HAVE_IPV6
+    char const *short_option_string = "6ha:b:p:q:";
+#else
+    char const *short_option_string = "ha:b:p:q:";
+#endif
     while ((selected_option = getopt_long(
-                    argc, argv, "6ha:b:p:q:", long_opts, NULL)) != -1) {
+                    argc, argv, short_option_string, long_opts, NULL)) != -1) {
         if (selected_option == '6') {
             result->use_ipv6 = true;
         } else if (selected_option == 'a') {

@@ -24,6 +24,16 @@ AC_TYPE_UINT16_T
 AC_CHECK_FUNCS([atexit memset socket strdup strtol])
 
 # Configure options
+AH_TEMPLATE([HAVE_IPV6],
+    [Define to enable IPv6. This flag should be set by default.])
+AC_ARG_ENABLE([ipv6],
+    [AS_HELP_STRING([--disable-ipv6],
+        [disable IPv6 support])],
+    [if test x$enableval != xno; then
+        AC_DEFINE([HAVE_IPV6], [1])
+    fi],
+    [AC_DEFINE([HAVE_IPV6], [1])])
+
 AC_ARG_ENABLE([tests],
     [AS_HELP_STRING([--enable-tests],
         [compile and run unit and integration tests (requires GLib)])],
@@ -42,6 +52,13 @@ AC_ARG_ENABLE([coverage],
     [coverage=true],
     [coverage=false])
 AM_CONDITIONAL([COVERAGE], [test x$coverage = xtrue])
+
+AC_ARG_ENABLE([valgrind],
+    [AS_HELP_STRING([--enable-valgrind],
+        [enable running unit and integration tests with valgrind])],
+    [valgrind=true],
+    [valgrind=false])
+AM_CONDITIONAL([VALGRIND], [test x$valgrind = xtrue])
 
 # Automake setup
 AC_CONFIG_FILES([Makefile])

@@ -42,8 +42,6 @@ void free_bridge_client(void *arg) {
     free(client);
 }
 
-void initialise_clients(bridge_client **clients,
-        struct event_base *evbase, tcpbridge_options *opts);
 void connect_clients(bridge_client **clients);
 
 struct event_base *setup_network(tcpbridge_options *opts) {
@@ -128,7 +126,12 @@ struct addrinfo *lookup_address(tcpbridge_address *address, bool use_ipv6) {
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
     hints.ai_socktype = SOCK_STREAM;
+#ifdef HAVE_IPV6
     hints.ai_family = use_ipv6 ? AF_INET6 : AF_INET;
+#else
+    (void) use_ipv6;
+    hints.ai_family = AF_INET;
+#endif
     char port_str[PORT_STR_LEN];
     snprintf(port_str, PORT_STR_LEN, "%d", address->port);
     int res;
@@ -188,29 +191,39 @@ void show_bind_warning(struct addrinfo *address) {
 
 char const *convert_address(struct addrinfo *address, char *dest) {
     char const *check_ptr = NULL;
+
     if (address->ai_family == AF_INET) {
         check_ptr = inet_ntop(
                 address->ai_family,
                 &((struct sockaddr_in*) address->ai_addr)->sin_addr.s_addr,
                 dest, INET6_ADDRSTRLEN);
-    } else if (address->ai_family == AF_INET6) {
+    }
+#ifdef HAVE_IPV6
+    else if (address->ai_family == AF_INET6) {
         check_ptr = inet_ntop(
                 address->ai_family,
                 &((struct sockaddr_in6*) address->ai_addr)->sin6_addr.s6_addr,
                 dest, INET6_ADDRSTRLEN);
     }
+#endif
+
     return check_ptr;
 }
 
 void convert_port(struct addrinfo *address, char *dest) {
     int written = 0;
+
     if (address->ai_family == AF_INET) {
         written = snprintf(dest, PORT_STR_LEN, "%d",
                 ntohs(((struct sockaddr_in*) address->ai_addr)->sin_port));
-    } else if (address->ai_family == AF_INET6) {
+    }
+#ifdef HAVE_IPV6
+    else if (address->ai_family == AF_INET6) {
         written = snprintf(dest, PORT_STR_LEN, "%d",
                 ntohs(((struct sockaddr_in6*) address->ai_addr)->sin6_port));
     }
+#endif
+
     assert(written > 0);
 }
 

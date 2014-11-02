@@ -23,15 +23,25 @@ static integtest_fixture fixture;
 
 typedef struct test_client {
     int sock;
+#ifdef HAVE_IPV6
     struct sockaddr_in6 connection_address;
+#else
+    struct sockaddr_in connection_address;
+#endif
 } test_client;
 
 tcpbridge_options *init_tcpbridge_options(void) {
     tcpbridge_options *result = allocate_tcpbridge_options();
+#ifdef HAVE_IPV6
     result->use_ipv6 = true;
     result->connection_endpoints[0]->address_str = strdup("::1");
-    result->connection_endpoints[0]->port = 33326;
     result->connection_endpoints[1]->address_str = strdup("::1");
+#else
+    result->use_ipv6 = false;
+    result->connection_endpoints[0]->address_str = strdup("127.0.0.1");
+    result->connection_endpoints[1]->address_str = strdup("127.0.0.1");
+#endif
+    result->connection_endpoints[0]->port = 33326;
     result->connection_endpoints[1]->port = 37831;
     return result;
 }
@@ -111,27 +121,61 @@ void run_clients() {
 }
 
 int create_test_socket(void) {
-    int result = socket(AF_INET6, SOCK_STREAM, 0);
+    int result;
+
+#ifdef HAVE_IPV6
+    result = socket(AF_INET6, SOCK_STREAM, 0);
+#else
+    result = socket(AF_INET, SOCK_STREAM, 0);
+#endif
+
     if (result < 0) {
         err(errno, "Could not create socket");
     }
     return result;
 }
 
+char const *get_connection_address(int clientid);
+uint16_t get_connection_port(int clientid);
+
+#ifdef HAVE_IPV6
+void fill_connection_address(
+        int clientid, struct sockaddr_in6 *connection_address) {
+    memset(connection_address, 0, sizeof(struct sockaddr_in6));
+
+    connection_address->sin6_family = AF_INET6;
+    connection_address->sin6_port = get_connection_port(clientid);
+    inet_pton(AF_INET6,
+            get_connection_address(clientid),
+            &connection_address->sin6_addr);
+}
+#else
+void fill_connection_address(
+        int clientid, struct sockaddr_in *connection_address) {
+    memset(connection_address, 0, sizeof(struct sockaddr_in));
+
+    connection_address->sin_family = AF_INET;
+    connection_address->sin_port = get_connection_port(clientid);
+    inet_pton(AF_INET,
+            get_connection_address(clientid),
+            &connection_address->sin_addr);
+}
+#endif
+
 test_client *init_test_client(int clientid) {
     test_client *result = calloc(1, sizeof(test_client));
     result->sock = create_test_socket();
-
-    memset(&result->connection_address, 0,
-            sizeof(result->connection_address));
-    result->connection_address.sin6_family = AF_INET6;
-    result->connection_address.sin6_port =
-        htons(fixture.opts->connection_endpoints[clientid]->port);
-    inet_pton(AF_INET6,
-            fixture.opts->connection_endpoints[clientid]->address_str,
-            &result->connection_address.sin6_addr);
+    fill_connection_address(clientid, &result->connection_address);
 
     return result;
+}
+
+char const *get_connection_address(int clientid) {
+    return fixture.opts->connection_endpoints[clientid]->address_str;
+}
+
+uint16_t get_connection_port(int clientid) {
+    return htons(fixture.opts->connection_endpoints[clientid]->port);
 }
 
 void connect_client(test_client *client, int id) {

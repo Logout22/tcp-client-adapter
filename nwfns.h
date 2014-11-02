@@ -21,8 +21,10 @@ typedef struct bridge_client {
 bridge_client *allocate_bridge_client(void);
 void free_bridge_client(void *arg);
 
-struct event_base *setup_network(tcpbridge_options *opts);
+void initialise_clients(bridge_client **clients,
+        struct event_base *evbase, tcpbridge_options *opts);
 int establish_socket(tcpbridge_address *address, bool use_ipv6);
+struct event_base *setup_network(tcpbridge_options *opts);
 
 #endif
 

@@ -4,6 +4,8 @@
 #include <string.h>
 #include <signal.h>
 #include <err.h>
+#include <assert.h>
+
 #include <event2/event.h>
 
 #include "tcpbridge_options.h"
@@ -104,15 +106,27 @@ void test_wrong_port2(void) {
 void test_all_values(void) {
     char *test_argv[] = {
         "",
+#ifdef HAVE_IPV6
         "-6",
+#endif
         "-a", host1,
         "-b", host2,
         "-p", "6",
         "-q", "8",
     };
+#ifdef HAVE_IPV6
     int test_argc = 10;
+#else
+    int test_argc = 9;
+#endif
+
     tcpbridge_options *result = evaluate_options(test_argc, test_argv);
+
+#ifdef HAVE_IPV6
     g_assert(result->use_ipv6 == true);
+#else
+    g_assert(result->use_ipv6 == false);
+#endif
     g_assert_cmpstr(result->connection_endpoints[0]->address_str, ==, host1);
     g_assert_cmpstr(result->connection_endpoints[1]->address_str, ==, host2);
     g_assert(result->connection_endpoints[0]->port == 6);
@@ -159,7 +173,9 @@ void test_bind_local(bool use_ipv6) {
 }
 
 void test_bind_local_v4(void) { test_bind_local(false); }
+#ifdef HAVE_IPV6
 void test_bind_local_v6(void) { test_bind_local(true); }
+#endif
 
 void test_bind_local_root(bool use_ipv6) {
     warnx("If this test fails check that you are not root\n");
@@ -173,7 +189,9 @@ void test_bind_local_root(bool use_ipv6) {
 }
 
 void test_bind_local_root_v4(void) { test_bind_local_root(false); }
+#ifdef HAVE_IPV6
 void test_bind_local_root_v6(void) { test_bind_local_root(true); }
+#endif
 
 void test_bind_nonexisting(bool use_ipv6) {
     warnx("If this test fails check if host %s accidentally exists\n", host1);
@@ -187,17 +205,25 @@ void test_bind_nonexisting(bool use_ipv6) {
 }
 
 void test_bind_nonexisting_v4(void) { test_bind_nonexisting(false); }
+#ifdef HAVE_IPV6
 void test_bind_nonexisting_v6(void) { test_bind_nonexisting(true); }
+#endif
 
 void test_initialise_clients(void) {
     bridge_client *clients[NUMBER_OF_ENDPOINTS];
     struct event_base *evbase = (struct event_base*) 12;
 
     tcpbridge_options *opts = allocate_tcpbridge_options();
+#ifdef HAVE_IPV6
     opts->use_ipv6 = true;
+#else
+    opts->use_ipv6 = false;
+#endif
     int i;
     for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
-        opts->connection_endpoints[i]->port = i + 10;
+        int target_port = i + 10;
+        assert(target_port < UINT16_MAX);
+        opts->connection_endpoints[i]->port = (uint16_t) target_port;
     }
 
     initialise_clients(clients, evbase, opts);
@@ -205,10 +231,16 @@ void test_initialise_clients(void) {
     g_assert_true(clients[0]->opposite_client == clients[1]);
     g_assert_true(clients[1]->opposite_client == clients[0]);
     for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
+#ifdef HAVE_IPV6
         g_assert_true(clients[i]->use_ipv6);
+#else
+        g_assert_false(clients[i]->use_ipv6);
+#endif
         g_assert_true(clients[i]->address->port == i + 10);
         g_assert_true(clients[i]->evbase == (struct event_base*) 12);
     }
+
+    free_tcpbridge_options(opts);
 }
 
 /* Disabled; enable when Libevent 2.1 becomes stable.
@@ -243,16 +275,22 @@ int main(int argc, char *argv[]) {
     g_test_add_func("/signals/sigint", test_sigint);
     g_test_add_func(
             "/nw/bind/test_bind_local_v4", test_bind_local_v4);
+#ifdef HAVE_IPV6
     g_test_add_func(
             "/nw/bind/test_bind_local_v6", test_bind_local_v6);
+#endif
     g_test_add_func(
             "/nw/bind/test_bind_local_root_v4", test_bind_local_root_v4);
+#ifdef HAVE_IPV6
     g_test_add_func(
             "/nw/bind/test_bind_local_root_v6", test_bind_local_root_v6);
+#endif
     g_test_add_func(
             "/nw/bind/test_bind_nonexisting_v4", test_bind_nonexisting_v4);
+#ifdef HAVE_IPV6
     g_test_add_func(
             "/nw/bind/test_bind_nonexisting_v6", test_bind_nonexisting_v6);
+#endif
     g_test_add_func(
             "/nw/initialise_clients", test_initialise_clients);
     /* Disabled (see above)

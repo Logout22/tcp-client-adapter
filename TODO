@@ -1,11 +1,5 @@
-- add flags to autoconf: --disable-ipv6, --enable-valgrind (for tests)
 - add a --persistent switch to wait for clients indefinitely,
     exit after first connection loss by default
 - export libevent's SSL functionality
 - allow more than two endpoints (master-slave)?
-
-Before release:
-
-- compile with strict CFLAGS
-- run main program in Valgrind manually
 

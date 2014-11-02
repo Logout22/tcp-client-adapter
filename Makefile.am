@@ -25,5 +25,11 @@ coverage: check
 	./run_gcov.sh unittests $(unittests_SOURCES)
 endif
 
+if VALGRIND
+VALGRIND_CMD = valgrind --leak-check=full
+valgrind: check
+	$(VALGRIND_CMD) ./unittests && $(VALGRIND_CMD) ./integrationtest
+endif
+
 endif
 
