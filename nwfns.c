@@ -107,9 +107,10 @@ int establish_socket(tcpbridge_address *address, bool use_ipv6) {
             continue;
         }
         if (bind_socket(sock, addresses)) {
-            show_bind_warning(addresses);
             break;
         }
+
+        show_bind_warning(addresses);
         addresses = addresses->ai_next;
     }
 
@@ -205,10 +206,10 @@ void convert_port(struct addrinfo *address, char *dest) {
     int written = 0;
     if (address->ai_family == AF_INET) {
         written = snprintf(dest, PORT_STR_LEN, "%d",
-                ((struct sockaddr_in*) address->ai_addr)->sin_port);
+                ntohs(((struct sockaddr_in*) address->ai_addr)->sin_port));
     } else if (address->ai_family == AF_INET6) {
         written = snprintf(dest, PORT_STR_LEN, "%d",
-                ((struct sockaddr_in6*) address->ai_addr)->sin6_port);
+                ntohs(((struct sockaddr_in6*) address->ai_addr)->sin6_port));
     }
     assert(written > 0);
 }
@@ -245,6 +246,7 @@ void new_client_cb(evutil_socket_t sock1, short what, void *arg) {
 
     client->client_bev = bufferevent_socket_new(client->evbase, cltsock,
                 BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS);
+    assert(client->client_bev);
     bufferevent_setcb(
             client->client_bev,
             readcb, writecb, eventcb,
@@ -255,15 +257,19 @@ void new_client_cb(evutil_socket_t sock1, short what, void *arg) {
 void readcb(struct bufferevent *bev, void *ctx) {
     bridge_client *client = (bridge_client*) ctx;
     assert(client->client_bev == bev);
-    bufferevent_read_buffer(bev,
-            bufferevent_get_output(client->opposite_client->client_bev));
+    if (client->opposite_client->client_bev) {
+        bufferevent_read_buffer(bev,
+                bufferevent_get_output(client->opposite_client->client_bev));
+    }
 }
 
 void writecb(struct bufferevent *bev, void *ctx) {
     bridge_client *client = (bridge_client*) ctx;
     assert(client->client_bev == bev);
-    bufferevent_write_buffer(bev,
-            bufferevent_get_input(client->opposite_client->client_bev));
+    if (client->opposite_client->client_bev) {
+        bufferevent_write_buffer(bev,
+                bufferevent_get_input(client->opposite_client->client_bev));
+    }
 }
 
 void eventcb(struct bufferevent *bev, short error, void *ctx) {
@@ -271,7 +277,7 @@ void eventcb(struct bufferevent *bev, short error, void *ctx) {
     assert(client->client_bev == bev);
 
     if (error & BEV_EVENT_EOF) {
-        errx(0, "Connection closed on %s:%d.",
+        warnx("Connection closed on %s:%d.",
                 client->address->address_str,
                 client->address->port);
     }

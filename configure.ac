@@ -14,20 +14,25 @@ AC_PROG_CC
 PKG_CHECK_MODULES([LIBEVENT], [libevent >= 2.0])
 
 # Checks for header files.
-AC_CHECK_HEADERS([inttypes.h netdb.h stdlib.h string.h sys/socket.h unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h inttypes.h netdb.h stdlib.h string.h sys/socket.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_HEADER_STDBOOL
 AC_TYPE_UINT16_T
 
 # Checks for library functions.
-AC_CHECK_FUNCS([atexit socket strdup strtol])
+AC_CHECK_FUNCS([atexit memset socket strdup strtol])
 
 # Configure options
 AC_ARG_ENABLE([tests],
     [AS_HELP_STRING([--enable-tests],
         [compile and run unit and integration tests (requires GLib)])],
-    [PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.42]); tests=true],
+    [PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.40])
+    AC_TYPE_PID_T
+    AC_TYPE_SIZE_T
+    AC_TYPE_SSIZE_T
+    AC_FUNC_FORK
+    tests=true],
     [tests=false])
 AM_CONDITIONAL([TESTS], [test x$tests = xtrue])
 

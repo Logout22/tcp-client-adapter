@@ -8,18 +8,21 @@ tcpbridge_LDADD = $(LIBEVENT_LIBS)
 
 if TESTS
 TESTS = $(check_PROGRAMS)
-check_PROGRAMS = unittests
+check_PROGRAMS = unittests integrationtest
 
 unittests_SOURCES = unittests.c $(SOURCES)
 unittests_CFLAGS = $(LIBEVENT_CFLAGS) $(GLIB_CFLAGS)
 unittests_LDADD = $(LIBEVENT_LIBS) $(GLIB_LIBS)
+
+integrationtest_SOURCES = integrationtest.c $(SOURCES)
+integrationtest_CFLAGS = $(LIBEVENT_CFLAGS)
+integrationtest_LDADD = $(LIBEVENT_LIBS)
 
 if COVERAGE
 unittests_CFLAGS += -fprofile-arcs -ftest-coverage
 
 coverage: check
 	./run_gcov.sh unittests $(unittests_SOURCES)
-	##./run_gcov.sh integrationtests $(integrationtests_SOURCES)
 endif
 
 endif
