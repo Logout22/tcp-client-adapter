@@ -8,8 +8,8 @@
 
 #include <event2/event.h>
 
-#include "tcpbridge_options.h"
-#include "tcpbridge_signal.h"
+#include "options.h"
+#include "signal.h"
 #include "freeatexit.h"
 #include "nwfns.h"
 
@@ -57,16 +57,16 @@ void test_default_values(void) {
         "-q", "8",
     };
     int test_argc = 5;
-    tcpbridge_options *result = evaluate_options(test_argc, test_argv);
+    tca_options *result = evaluate_options(test_argc, test_argv);
     g_assert(result->use_ipv6 == false);
     g_assert_cmpstr(
             result->connection_endpoints[0]->address_str,
             ==,
-            DEFAULT_ADDRESS);
+            "0.0.0.0");
     g_assert_cmpstr(
             result->connection_endpoints[1]->address_str,
             ==,
-            DEFAULT_ADDRESS);
+            "0.0.0.0");
     g_assert(result->connection_endpoints[0]->port == 6);
     g_assert(result->connection_endpoints[1]->port == 8);
 }
@@ -120,7 +120,7 @@ void test_all_values(void) {
     int test_argc = 9;
 #endif
 
-    tcpbridge_options *result = evaluate_options(test_argc, test_argv);
+    tca_options *result = evaluate_options(test_argc, test_argv);
 
 #ifdef HAVE_IPV6
     g_assert(result->use_ipv6 == true);
@@ -147,7 +147,7 @@ void test_sigterm(void) { test_signal(SIGTERM); }
 void test_sigint(void) { test_signal(SIGINT); }
 
 void test_bind(char const *address_str, uint16_t const port, bool use_ipv6) {
-    tcpbridge_address *address = allocate_tcpbridge_address();
+    tca_address *address = allocate_tca_address();
     address->address_str = strdup(address_str);
     address->port = port;
 
@@ -155,7 +155,7 @@ void test_bind(char const *address_str, uint16_t const port, bool use_ipv6) {
     g_assert(socket >= 0);
 
     close(socket);
-    free_tcpbridge_address(address);
+    free_tca_address(address);
 }
 
 void test_bind_local(bool use_ipv6) {
@@ -213,7 +213,7 @@ void test_initialise_clients(void) {
     bridge_client *clients[NUMBER_OF_ENDPOINTS];
     struct event_base *evbase = (struct event_base*) 12;
 
-    tcpbridge_options *opts = allocate_tcpbridge_options();
+    tca_options *opts = allocate_tca_options();
 #ifdef HAVE_IPV6
     opts->use_ipv6 = true;
 #else
@@ -240,7 +240,7 @@ void test_initialise_clients(void) {
         g_assert_true(clients[i]->evbase == (struct event_base*) 12);
     }
 
-    free_tcpbridge_options(opts);
+    free_tca_options(opts);
 }
 
 /* Disabled; enable when Libevent 2.1 becomes stable.

@@ -1,5 +1,5 @@
-#ifndef __TCPBRIDGE_SIGNAL_H__
-#define __TCPBRIDGE_SIGNAL_H__
+#ifndef __TCA_SIGNAL_H__
+#define __TCA_SIGNAL_H__
 
 #include "common.h"
 

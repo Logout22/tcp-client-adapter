@@ -4,7 +4,6 @@
 #include "config.h"
 
 #define EQ(S, T) (strcmp((S), (T)) == 0)
-#define DEFAULT_ADDRESS "localhost"
 
 #define ALLOCATE(TYPE, VAR) \
     TYPE *VAR = (TYPE*) calloc(1, sizeof(TYPE)); \

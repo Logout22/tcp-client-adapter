@@ -18,8 +18,8 @@
 
 #define PORT_STR_LEN 6
 
-void tcpbridge_free_eventbase(void *base);
-void tcpbridge_free_event(void *ev);
+void tca_free_eventbase(void *base);
+void tca_free_event(void *ev);
 
 bridge_client *allocate_bridge_client() {
     ALLOCATE(bridge_client, result);
@@ -44,10 +44,10 @@ void free_bridge_client(void *arg) {
 
 void connect_clients(bridge_client **clients);
 
-struct event_base *setup_network(tcpbridge_options *opts) {
+struct event_base *setup_network(tca_options *opts) {
     struct event_base *evbase = event_base_new();
     assert(evbase != NULL);
-    free_object_at_exit(tcpbridge_free_eventbase, evbase);
+    free_object_at_exit(tca_free_eventbase, evbase);
 
     bridge_client *clients[NUMBER_OF_ENDPOINTS];
     initialise_clients(clients, evbase, opts);
@@ -57,7 +57,7 @@ struct event_base *setup_network(tcpbridge_options *opts) {
 }
 
 void initialise_clients(bridge_client **clients,
-        struct event_base *evbase, tcpbridge_options *opts) {
+        struct event_base *evbase, tca_options *opts) {
     int i;
     for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
         clients[i] = allocate_bridge_client();
@@ -88,13 +88,13 @@ void connect_clients(bridge_client **clients) {
     }
 }
 
-struct addrinfo *lookup_address(tcpbridge_address *address, bool use_ipv6);
+struct addrinfo *lookup_address(tca_address *address, bool use_ipv6);
 int create_socket(struct addrinfo *address);
 void show_socket_warning(struct addrinfo *address);
 bool bind_socket(int sock, struct addrinfo *address);
 void show_bind_warning(struct addrinfo *address);
 
-int establish_socket(tcpbridge_address *address, bool use_ipv6) {
+int establish_socket(tca_address *address, bool use_ipv6) {
     int sock;
 
     struct addrinfo *addresses = lookup_address(address, use_ipv6);
@@ -119,9 +119,9 @@ int establish_socket(tcpbridge_address *address, bool use_ipv6) {
     return sock;
 }
 
-void tcpbridge_free_addrinfo(void *info);
+void tca_free_addrinfo(void *info);
 
-struct addrinfo *lookup_address(tcpbridge_address *address, bool use_ipv6) {
+struct addrinfo *lookup_address(tca_address *address, bool use_ipv6) {
     struct addrinfo *result = NULL;
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
@@ -143,7 +143,7 @@ struct addrinfo *lookup_address(tcpbridge_address *address, bool use_ipv6) {
         fprintf(stderr, "getaddrinfo failed: %s\n", gai_strerror(res));
         exit(EXIT_FAILURE);
     }
-    free_object_at_exit(tcpbridge_free_addrinfo, result);
+    free_object_at_exit(tca_free_addrinfo, result);
 
     return result;
 }
@@ -236,7 +236,7 @@ void register_server_callback(bridge_client *client) {
             EV_READ,
             new_client_cb, (void*) client);
     assert(sock_event);
-    free_object_at_exit(tcpbridge_free_event, sock_event);
+    free_object_at_exit(tca_free_event, sock_event);
     event_add(sock_event, NULL);
 }
 
@@ -302,15 +302,15 @@ void eventcb(struct bufferevent *bev, short error, void *ctx) {
     }
 }
 
-void tcpbridge_free_addrinfo(void *info) {
+void tca_free_addrinfo(void *info) {
     freeaddrinfo((struct addrinfo*) info);
 }
 
-void tcpbridge_free_eventbase(void *base) {
+void tca_free_eventbase(void *base) {
     event_base_free((struct event_base*) base);
 }
 
-void tcpbridge_free_event(void *ev) {
+void tca_free_event(void *ev) {
     event_free((struct event*) ev);
 }
 

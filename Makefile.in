@@ -76,7 +76,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = tcpbridge$(EXEEXT)
+bin_PROGRAMS = tca$(EXEEXT)
 @TESTS_TRUE@check_PROGRAMS = unittests$(EXEEXT) \
 @TESTS_TRUE@	integrationtest$(EXEEXT)
 @COVERAGE_TRUE@@TESTS_TRUE@am__append_1 = -fprofile-arcs -ftest-coverage
@@ -99,11 +99,11 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__integrationtest_SOURCES_DIST = integrationtest.c freeatexit.c \
-	nwfns.c tcpbridge_options.c tcpbridge_signal.c
+	nwfns.c options.c tca_signal.c
 am__objects_1 = integrationtest-freeatexit.$(OBJEXT) \
 	integrationtest-nwfns.$(OBJEXT) \
-	integrationtest-tcpbridge_options.$(OBJEXT) \
-	integrationtest-tcpbridge_signal.$(OBJEXT)
+	integrationtest-options.$(OBJEXT) \
+	integrationtest-tca_signal.$(OBJEXT)
 @TESTS_TRUE@am_integrationtest_OBJECTS =  \
 @TESTS_TRUE@	integrationtest-integrationtest.$(OBJEXT) \
 @TESTS_TRUE@	$(am__objects_1)
@@ -112,22 +112,18 @@ am__DEPENDENCIES_1 =
 @TESTS_TRUE@integrationtest_DEPENDENCIES = $(am__DEPENDENCIES_1)
 integrationtest_LINK = $(CCLD) $(integrationtest_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-am__objects_2 = tcpbridge-freeatexit.$(OBJEXT) \
-	tcpbridge-nwfns.$(OBJEXT) \
-	tcpbridge-tcpbridge_options.$(OBJEXT) \
-	tcpbridge-tcpbridge_signal.$(OBJEXT)
-am_tcpbridge_OBJECTS = tcpbridge-tcpbridge_main.$(OBJEXT) \
-	$(am__objects_2)
-tcpbridge_OBJECTS = $(am_tcpbridge_OBJECTS)
-tcpbridge_DEPENDENCIES = $(am__DEPENDENCIES_1)
-tcpbridge_LINK = $(CCLD) $(tcpbridge_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
+am__objects_2 = tca-freeatexit.$(OBJEXT) tca-nwfns.$(OBJEXT) \
+	tca-options.$(OBJEXT) tca-tca_signal.$(OBJEXT)
+am_tca_OBJECTS = tca-main.$(OBJEXT) $(am__objects_2)
+tca_OBJECTS = $(am_tca_OBJECTS)
+tca_DEPENDENCIES = $(am__DEPENDENCIES_1)
+tca_LINK = $(CCLD) $(tca_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o \
+	$@
 am__unittests_SOURCES_DIST = unittests.c freeatexit.c nwfns.c \
-	tcpbridge_options.c tcpbridge_signal.c
+	options.c tca_signal.c
 am__objects_3 = unittests-freeatexit.$(OBJEXT) \
-	unittests-nwfns.$(OBJEXT) \
-	unittests-tcpbridge_options.$(OBJEXT) \
-	unittests-tcpbridge_signal.$(OBJEXT)
+	unittests-nwfns.$(OBJEXT) unittests-options.$(OBJEXT) \
+	unittests-tca_signal.$(OBJEXT)
 @TESTS_TRUE@am_unittests_OBJECTS = unittests-unittests.$(OBJEXT) \
 @TESTS_TRUE@	$(am__objects_3)
 unittests_OBJECTS = $(am_unittests_OBJECTS)
@@ -167,8 +163,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-DIST_SOURCES = $(am__integrationtest_SOURCES_DIST) \
-	$(tcpbridge_SOURCES) $(am__unittests_SOURCES_DIST)
+DIST_SOURCES = $(am__integrationtest_SOURCES_DIST) $(tca_SOURCES) \
+	$(am__unittests_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -510,10 +506,10 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SOURCES = freeatexit.c nwfns.c tcpbridge_options.c tcpbridge_signal.c
-tcpbridge_SOURCES = tcpbridge_main.c $(SOURCES)
-tcpbridge_CFLAGS = $(LIBEVENT_CFLAGS)
-tcpbridge_LDADD = $(LIBEVENT_LIBS)
+SOURCES = freeatexit.c nwfns.c options.c tca_signal.c
+tca_SOURCES = main.c $(SOURCES)
+tca_CFLAGS = $(LIBEVENT_CFLAGS)
+tca_LDADD = $(LIBEVENT_LIBS)
 @TESTS_TRUE@TESTS = $(check_PROGRAMS)
 @TESTS_TRUE@unittests_SOURCES = unittests.c $(SOURCES)
 @TESTS_TRUE@unittests_CFLAGS = $(LIBEVENT_CFLAGS) $(GLIB_CFLAGS) \
@@ -627,9 +623,9 @@ integrationtest$(EXEEXT): $(integrationtest_OBJECTS) $(integrationtest_DEPENDENC
 	@rm -f integrationtest$(EXEEXT)
 	$(AM_V_CCLD)$(integrationtest_LINK) $(integrationtest_OBJECTS) $(integrationtest_LDADD) $(LIBS)
 
-tcpbridge$(EXEEXT): $(tcpbridge_OBJECTS) $(tcpbridge_DEPENDENCIES) $(EXTRA_tcpbridge_DEPENDENCIES) 
-	@rm -f tcpbridge$(EXEEXT)
-	$(AM_V_CCLD)$(tcpbridge_LINK) $(tcpbridge_OBJECTS) $(tcpbridge_LDADD) $(LIBS)
+tca$(EXEEXT): $(tca_OBJECTS) $(tca_DEPENDENCIES) $(EXTRA_tca_DEPENDENCIES) 
+	@rm -f tca$(EXEEXT)
+	$(AM_V_CCLD)$(tca_LINK) $(tca_OBJECTS) $(tca_LDADD) $(LIBS)
 
 unittests$(EXEEXT): $(unittests_OBJECTS) $(unittests_DEPENDENCIES) $(EXTRA_unittests_DEPENDENCIES) 
 	@rm -f unittests$(EXEEXT)
@@ -644,17 +640,17 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/integrationtest-freeatexit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/integrationtest-integrationtest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/integrationtest-nwfns.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/integrationtest-tcpbridge_options.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/integrationtest-tcpbridge_signal.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcpbridge-freeatexit.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcpbridge-nwfns.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcpbridge-tcpbridge_main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcpbridge-tcpbridge_options.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tcpbridge-tcpbridge_signal.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/integrationtest-options.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/integrationtest-tca_signal.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tca-freeatexit.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tca-main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tca-nwfns.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tca-options.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tca-tca_signal.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unittests-freeatexit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unittests-nwfns.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unittests-tcpbridge_options.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unittests-tcpbridge_signal.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unittests-options.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unittests-tca_signal.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unittests-unittests.Po@am__quote@
 
 .c.o:
@@ -713,103 +709,103 @@ integrationtest-nwfns.obj: nwfns.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(integrationtest_CFLAGS) $(CFLAGS) -c -o integrationtest-nwfns.obj `if test -f 'nwfns.c'; then $(CYGPATH_W) 'nwfns.c'; else $(CYGPATH_W) '$(srcdir)/nwfns.c'; fi`
 
-integrationtest-tcpbridge_options.o: tcpbridge_options.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(integrationtest_CFLAGS) $(CFLAGS) -MT integrationtest-tcpbridge_options.o -MD -MP -MF $(DEPDIR)/integrationtest-tcpbridge_options.Tpo -c -o integrationtest-tcpbridge_options.o `test -f 'tcpbridge_options.c' || echo '$(srcdir)/'`tcpbridge_options.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/integrationtest-tcpbridge_options.Tpo $(DEPDIR)/integrationtest-tcpbridge_options.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tcpbridge_options.c' object='integrationtest-tcpbridge_options.o' libtool=no @AMDEPBACKSLASH@
+integrationtest-options.o: options.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(integrationtest_CFLAGS) $(CFLAGS) -MT integrationtest-options.o -MD -MP -MF $(DEPDIR)/integrationtest-options.Tpo -c -o integrationtest-options.o `test -f 'options.c' || echo '$(srcdir)/'`options.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/integrationtest-options.Tpo $(DEPDIR)/integrationtest-options.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='options.c' object='integrationtest-options.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(integrationtest_CFLAGS) $(CFLAGS) -c -o integrationtest-tcpbridge_options.o `test -f 'tcpbridge_options.c' || echo '$(srcdir)/'`tcpbridge_options.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(integrationtest_CFLAGS) $(CFLAGS) -c -o integrationtest-options.o `test -f 'options.c' || echo '$(srcdir)/'`options.c
 
-integrationtest-tcpbridge_options.obj: tcpbridge_options.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(integrationtest_CFLAGS) $(CFLAGS) -MT integrationtest-tcpbridge_options.obj -MD -MP -MF $(DEPDIR)/integrationtest-tcpbridge_options.Tpo -c -o integrationtest-tcpbridge_options.obj `if test -f 'tcpbridge_options.c'; then $(CYGPATH_W) 'tcpbridge_options.c'; else $(CYGPATH_W) '$(srcdir)/tcpbridge_options.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/integrationtest-tcpbridge_options.Tpo $(DEPDIR)/integrationtest-tcpbridge_options.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tcpbridge_options.c' object='integrationtest-tcpbridge_options.obj' libtool=no @AMDEPBACKSLASH@
+integrationtest-options.obj: options.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(integrationtest_CFLAGS) $(CFLAGS) -MT integrationtest-options.obj -MD -MP -MF $(DEPDIR)/integrationtest-options.Tpo -c -o integrationtest-options.obj `if test -f 'options.c'; then $(CYGPATH_W) 'options.c'; else $(CYGPATH_W) '$(srcdir)/options.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/integrationtest-options.Tpo $(DEPDIR)/integrationtest-options.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='options.c' object='integrationtest-options.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(integrationtest_CFLAGS) $(CFLAGS) -c -o integrationtest-tcpbridge_options.obj `if test -f 'tcpbridge_options.c'; then $(CYGPATH_W) 'tcpbridge_options.c'; else $(CYGPATH_W) '$(srcdir)/tcpbridge_options.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(integrationtest_CFLAGS) $(CFLAGS) -c -o integrationtest-options.obj `if test -f 'options.c'; then $(CYGPATH_W) 'options.c'; else $(CYGPATH_W) '$(srcdir)/options.c'; fi`
 
-integrationtest-tcpbridge_signal.o: tcpbridge_signal.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(integrationtest_CFLAGS) $(CFLAGS) -MT integrationtest-tcpbridge_signal.o -MD -MP -MF $(DEPDIR)/integrationtest-tcpbridge_signal.Tpo -c -o integrationtest-tcpbridge_signal.o `test -f 'tcpbridge_signal.c' || echo '$(srcdir)/'`tcpbridge_signal.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/integrationtest-tcpbridge_signal.Tpo $(DEPDIR)/integrationtest-tcpbridge_signal.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tcpbridge_signal.c' object='integrationtest-tcpbridge_signal.o' libtool=no @AMDEPBACKSLASH@
+integrationtest-tca_signal.o: tca_signal.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(integrationtest_CFLAGS) $(CFLAGS) -MT integrationtest-tca_signal.o -MD -MP -MF $(DEPDIR)/integrationtest-tca_signal.Tpo -c -o integrationtest-tca_signal.o `test -f 'tca_signal.c' || echo '$(srcdir)/'`tca_signal.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/integrationtest-tca_signal.Tpo $(DEPDIR)/integrationtest-tca_signal.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tca_signal.c' object='integrationtest-tca_signal.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(integrationtest_CFLAGS) $(CFLAGS) -c -o integrationtest-tcpbridge_signal.o `test -f 'tcpbridge_signal.c' || echo '$(srcdir)/'`tcpbridge_signal.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(integrationtest_CFLAGS) $(CFLAGS) -c -o integrationtest-tca_signal.o `test -f 'tca_signal.c' || echo '$(srcdir)/'`tca_signal.c
 
-integrationtest-tcpbridge_signal.obj: tcpbridge_signal.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(integrationtest_CFLAGS) $(CFLAGS) -MT integrationtest-tcpbridge_signal.obj -MD -MP -MF $(DEPDIR)/integrationtest-tcpbridge_signal.Tpo -c -o integrationtest-tcpbridge_signal.obj `if test -f 'tcpbridge_signal.c'; then $(CYGPATH_W) 'tcpbridge_signal.c'; else $(CYGPATH_W) '$(srcdir)/tcpbridge_signal.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/integrationtest-tcpbridge_signal.Tpo $(DEPDIR)/integrationtest-tcpbridge_signal.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tcpbridge_signal.c' object='integrationtest-tcpbridge_signal.obj' libtool=no @AMDEPBACKSLASH@
+integrationtest-tca_signal.obj: tca_signal.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(integrationtest_CFLAGS) $(CFLAGS) -MT integrationtest-tca_signal.obj -MD -MP -MF $(DEPDIR)/integrationtest-tca_signal.Tpo -c -o integrationtest-tca_signal.obj `if test -f 'tca_signal.c'; then $(CYGPATH_W) 'tca_signal.c'; else $(CYGPATH_W) '$(srcdir)/tca_signal.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/integrationtest-tca_signal.Tpo $(DEPDIR)/integrationtest-tca_signal.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tca_signal.c' object='integrationtest-tca_signal.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(integrationtest_CFLAGS) $(CFLAGS) -c -o integrationtest-tcpbridge_signal.obj `if test -f 'tcpbridge_signal.c'; then $(CYGPATH_W) 'tcpbridge_signal.c'; else $(CYGPATH_W) '$(srcdir)/tcpbridge_signal.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(integrationtest_CFLAGS) $(CFLAGS) -c -o integrationtest-tca_signal.obj `if test -f 'tca_signal.c'; then $(CYGPATH_W) 'tca_signal.c'; else $(CYGPATH_W) '$(srcdir)/tca_signal.c'; fi`
 
-tcpbridge-tcpbridge_main.o: tcpbridge_main.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -MT tcpbridge-tcpbridge_main.o -MD -MP -MF $(DEPDIR)/tcpbridge-tcpbridge_main.Tpo -c -o tcpbridge-tcpbridge_main.o `test -f 'tcpbridge_main.c' || echo '$(srcdir)/'`tcpbridge_main.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tcpbridge-tcpbridge_main.Tpo $(DEPDIR)/tcpbridge-tcpbridge_main.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tcpbridge_main.c' object='tcpbridge-tcpbridge_main.o' libtool=no @AMDEPBACKSLASH@
+tca-main.o: main.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -MT tca-main.o -MD -MP -MF $(DEPDIR)/tca-main.Tpo -c -o tca-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tca-main.Tpo $(DEPDIR)/tca-main.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='main.c' object='tca-main.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -c -o tcpbridge-tcpbridge_main.o `test -f 'tcpbridge_main.c' || echo '$(srcdir)/'`tcpbridge_main.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -c -o tca-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c
 
-tcpbridge-tcpbridge_main.obj: tcpbridge_main.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -MT tcpbridge-tcpbridge_main.obj -MD -MP -MF $(DEPDIR)/tcpbridge-tcpbridge_main.Tpo -c -o tcpbridge-tcpbridge_main.obj `if test -f 'tcpbridge_main.c'; then $(CYGPATH_W) 'tcpbridge_main.c'; else $(CYGPATH_W) '$(srcdir)/tcpbridge_main.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tcpbridge-tcpbridge_main.Tpo $(DEPDIR)/tcpbridge-tcpbridge_main.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tcpbridge_main.c' object='tcpbridge-tcpbridge_main.obj' libtool=no @AMDEPBACKSLASH@
+tca-main.obj: main.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -MT tca-main.obj -MD -MP -MF $(DEPDIR)/tca-main.Tpo -c -o tca-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tca-main.Tpo $(DEPDIR)/tca-main.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='main.c' object='tca-main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -c -o tcpbridge-tcpbridge_main.obj `if test -f 'tcpbridge_main.c'; then $(CYGPATH_W) 'tcpbridge_main.c'; else $(CYGPATH_W) '$(srcdir)/tcpbridge_main.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -c -o tca-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
 
-tcpbridge-freeatexit.o: freeatexit.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -MT tcpbridge-freeatexit.o -MD -MP -MF $(DEPDIR)/tcpbridge-freeatexit.Tpo -c -o tcpbridge-freeatexit.o `test -f 'freeatexit.c' || echo '$(srcdir)/'`freeatexit.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tcpbridge-freeatexit.Tpo $(DEPDIR)/tcpbridge-freeatexit.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='freeatexit.c' object='tcpbridge-freeatexit.o' libtool=no @AMDEPBACKSLASH@
+tca-freeatexit.o: freeatexit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -MT tca-freeatexit.o -MD -MP -MF $(DEPDIR)/tca-freeatexit.Tpo -c -o tca-freeatexit.o `test -f 'freeatexit.c' || echo '$(srcdir)/'`freeatexit.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tca-freeatexit.Tpo $(DEPDIR)/tca-freeatexit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='freeatexit.c' object='tca-freeatexit.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -c -o tcpbridge-freeatexit.o `test -f 'freeatexit.c' || echo '$(srcdir)/'`freeatexit.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -c -o tca-freeatexit.o `test -f 'freeatexit.c' || echo '$(srcdir)/'`freeatexit.c
 
-tcpbridge-freeatexit.obj: freeatexit.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -MT tcpbridge-freeatexit.obj -MD -MP -MF $(DEPDIR)/tcpbridge-freeatexit.Tpo -c -o tcpbridge-freeatexit.obj `if test -f 'freeatexit.c'; then $(CYGPATH_W) 'freeatexit.c'; else $(CYGPATH_W) '$(srcdir)/freeatexit.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tcpbridge-freeatexit.Tpo $(DEPDIR)/tcpbridge-freeatexit.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='freeatexit.c' object='tcpbridge-freeatexit.obj' libtool=no @AMDEPBACKSLASH@
+tca-freeatexit.obj: freeatexit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -MT tca-freeatexit.obj -MD -MP -MF $(DEPDIR)/tca-freeatexit.Tpo -c -o tca-freeatexit.obj `if test -f 'freeatexit.c'; then $(CYGPATH_W) 'freeatexit.c'; else $(CYGPATH_W) '$(srcdir)/freeatexit.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tca-freeatexit.Tpo $(DEPDIR)/tca-freeatexit.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='freeatexit.c' object='tca-freeatexit.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -c -o tcpbridge-freeatexit.obj `if test -f 'freeatexit.c'; then $(CYGPATH_W) 'freeatexit.c'; else $(CYGPATH_W) '$(srcdir)/freeatexit.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -c -o tca-freeatexit.obj `if test -f 'freeatexit.c'; then $(CYGPATH_W) 'freeatexit.c'; else $(CYGPATH_W) '$(srcdir)/freeatexit.c'; fi`
 
-tcpbridge-nwfns.o: nwfns.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -MT tcpbridge-nwfns.o -MD -MP -MF $(DEPDIR)/tcpbridge-nwfns.Tpo -c -o tcpbridge-nwfns.o `test -f 'nwfns.c' || echo '$(srcdir)/'`nwfns.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tcpbridge-nwfns.Tpo $(DEPDIR)/tcpbridge-nwfns.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nwfns.c' object='tcpbridge-nwfns.o' libtool=no @AMDEPBACKSLASH@
+tca-nwfns.o: nwfns.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -MT tca-nwfns.o -MD -MP -MF $(DEPDIR)/tca-nwfns.Tpo -c -o tca-nwfns.o `test -f 'nwfns.c' || echo '$(srcdir)/'`nwfns.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tca-nwfns.Tpo $(DEPDIR)/tca-nwfns.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nwfns.c' object='tca-nwfns.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -c -o tcpbridge-nwfns.o `test -f 'nwfns.c' || echo '$(srcdir)/'`nwfns.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -c -o tca-nwfns.o `test -f 'nwfns.c' || echo '$(srcdir)/'`nwfns.c
 
-tcpbridge-nwfns.obj: nwfns.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -MT tcpbridge-nwfns.obj -MD -MP -MF $(DEPDIR)/tcpbridge-nwfns.Tpo -c -o tcpbridge-nwfns.obj `if test -f 'nwfns.c'; then $(CYGPATH_W) 'nwfns.c'; else $(CYGPATH_W) '$(srcdir)/nwfns.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tcpbridge-nwfns.Tpo $(DEPDIR)/tcpbridge-nwfns.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nwfns.c' object='tcpbridge-nwfns.obj' libtool=no @AMDEPBACKSLASH@
+tca-nwfns.obj: nwfns.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -MT tca-nwfns.obj -MD -MP -MF $(DEPDIR)/tca-nwfns.Tpo -c -o tca-nwfns.obj `if test -f 'nwfns.c'; then $(CYGPATH_W) 'nwfns.c'; else $(CYGPATH_W) '$(srcdir)/nwfns.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tca-nwfns.Tpo $(DEPDIR)/tca-nwfns.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='nwfns.c' object='tca-nwfns.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -c -o tcpbridge-nwfns.obj `if test -f 'nwfns.c'; then $(CYGPATH_W) 'nwfns.c'; else $(CYGPATH_W) '$(srcdir)/nwfns.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -c -o tca-nwfns.obj `if test -f 'nwfns.c'; then $(CYGPATH_W) 'nwfns.c'; else $(CYGPATH_W) '$(srcdir)/nwfns.c'; fi`
 
-tcpbridge-tcpbridge_options.o: tcpbridge_options.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -MT tcpbridge-tcpbridge_options.o -MD -MP -MF $(DEPDIR)/tcpbridge-tcpbridge_options.Tpo -c -o tcpbridge-tcpbridge_options.o `test -f 'tcpbridge_options.c' || echo '$(srcdir)/'`tcpbridge_options.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tcpbridge-tcpbridge_options.Tpo $(DEPDIR)/tcpbridge-tcpbridge_options.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tcpbridge_options.c' object='tcpbridge-tcpbridge_options.o' libtool=no @AMDEPBACKSLASH@
+tca-options.o: options.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -MT tca-options.o -MD -MP -MF $(DEPDIR)/tca-options.Tpo -c -o tca-options.o `test -f 'options.c' || echo '$(srcdir)/'`options.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tca-options.Tpo $(DEPDIR)/tca-options.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='options.c' object='tca-options.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -c -o tcpbridge-tcpbridge_options.o `test -f 'tcpbridge_options.c' || echo '$(srcdir)/'`tcpbridge_options.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -c -o tca-options.o `test -f 'options.c' || echo '$(srcdir)/'`options.c
 
-tcpbridge-tcpbridge_options.obj: tcpbridge_options.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -MT tcpbridge-tcpbridge_options.obj -MD -MP -MF $(DEPDIR)/tcpbridge-tcpbridge_options.Tpo -c -o tcpbridge-tcpbridge_options.obj `if test -f 'tcpbridge_options.c'; then $(CYGPATH_W) 'tcpbridge_options.c'; else $(CYGPATH_W) '$(srcdir)/tcpbridge_options.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tcpbridge-tcpbridge_options.Tpo $(DEPDIR)/tcpbridge-tcpbridge_options.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tcpbridge_options.c' object='tcpbridge-tcpbridge_options.obj' libtool=no @AMDEPBACKSLASH@
+tca-options.obj: options.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -MT tca-options.obj -MD -MP -MF $(DEPDIR)/tca-options.Tpo -c -o tca-options.obj `if test -f 'options.c'; then $(CYGPATH_W) 'options.c'; else $(CYGPATH_W) '$(srcdir)/options.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tca-options.Tpo $(DEPDIR)/tca-options.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='options.c' object='tca-options.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -c -o tcpbridge-tcpbridge_options.obj `if test -f 'tcpbridge_options.c'; then $(CYGPATH_W) 'tcpbridge_options.c'; else $(CYGPATH_W) '$(srcdir)/tcpbridge_options.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -c -o tca-options.obj `if test -f 'options.c'; then $(CYGPATH_W) 'options.c'; else $(CYGPATH_W) '$(srcdir)/options.c'; fi`
 
-tcpbridge-tcpbridge_signal.o: tcpbridge_signal.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -MT tcpbridge-tcpbridge_signal.o -MD -MP -MF $(DEPDIR)/tcpbridge-tcpbridge_signal.Tpo -c -o tcpbridge-tcpbridge_signal.o `test -f 'tcpbridge_signal.c' || echo '$(srcdir)/'`tcpbridge_signal.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tcpbridge-tcpbridge_signal.Tpo $(DEPDIR)/tcpbridge-tcpbridge_signal.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tcpbridge_signal.c' object='tcpbridge-tcpbridge_signal.o' libtool=no @AMDEPBACKSLASH@
+tca-tca_signal.o: tca_signal.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -MT tca-tca_signal.o -MD -MP -MF $(DEPDIR)/tca-tca_signal.Tpo -c -o tca-tca_signal.o `test -f 'tca_signal.c' || echo '$(srcdir)/'`tca_signal.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tca-tca_signal.Tpo $(DEPDIR)/tca-tca_signal.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tca_signal.c' object='tca-tca_signal.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -c -o tcpbridge-tcpbridge_signal.o `test -f 'tcpbridge_signal.c' || echo '$(srcdir)/'`tcpbridge_signal.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -c -o tca-tca_signal.o `test -f 'tca_signal.c' || echo '$(srcdir)/'`tca_signal.c
 
-tcpbridge-tcpbridge_signal.obj: tcpbridge_signal.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -MT tcpbridge-tcpbridge_signal.obj -MD -MP -MF $(DEPDIR)/tcpbridge-tcpbridge_signal.Tpo -c -o tcpbridge-tcpbridge_signal.obj `if test -f 'tcpbridge_signal.c'; then $(CYGPATH_W) 'tcpbridge_signal.c'; else $(CYGPATH_W) '$(srcdir)/tcpbridge_signal.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tcpbridge-tcpbridge_signal.Tpo $(DEPDIR)/tcpbridge-tcpbridge_signal.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tcpbridge_signal.c' object='tcpbridge-tcpbridge_signal.obj' libtool=no @AMDEPBACKSLASH@
+tca-tca_signal.obj: tca_signal.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -MT tca-tca_signal.obj -MD -MP -MF $(DEPDIR)/tca-tca_signal.Tpo -c -o tca-tca_signal.obj `if test -f 'tca_signal.c'; then $(CYGPATH_W) 'tca_signal.c'; else $(CYGPATH_W) '$(srcdir)/tca_signal.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tca-tca_signal.Tpo $(DEPDIR)/tca-tca_signal.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tca_signal.c' object='tca-tca_signal.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tcpbridge_CFLAGS) $(CFLAGS) -c -o tcpbridge-tcpbridge_signal.obj `if test -f 'tcpbridge_signal.c'; then $(CYGPATH_W) 'tcpbridge_signal.c'; else $(CYGPATH_W) '$(srcdir)/tcpbridge_signal.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(tca_CFLAGS) $(CFLAGS) -c -o tca-tca_signal.obj `if test -f 'tca_signal.c'; then $(CYGPATH_W) 'tca_signal.c'; else $(CYGPATH_W) '$(srcdir)/tca_signal.c'; fi`
 
 unittests-unittests.o: unittests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(unittests_CFLAGS) $(CFLAGS) -MT unittests-unittests.o -MD -MP -MF $(DEPDIR)/unittests-unittests.Tpo -c -o unittests-unittests.o `test -f 'unittests.c' || echo '$(srcdir)/'`unittests.c
@@ -853,33 +849,33 @@ unittests-nwfns.obj: nwfns.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(unittests_CFLAGS) $(CFLAGS) -c -o unittests-nwfns.obj `if test -f 'nwfns.c'; then $(CYGPATH_W) 'nwfns.c'; else $(CYGPATH_W) '$(srcdir)/nwfns.c'; fi`
 
-unittests-tcpbridge_options.o: tcpbridge_options.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(unittests_CFLAGS) $(CFLAGS) -MT unittests-tcpbridge_options.o -MD -MP -MF $(DEPDIR)/unittests-tcpbridge_options.Tpo -c -o unittests-tcpbridge_options.o `test -f 'tcpbridge_options.c' || echo '$(srcdir)/'`tcpbridge_options.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/unittests-tcpbridge_options.Tpo $(DEPDIR)/unittests-tcpbridge_options.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tcpbridge_options.c' object='unittests-tcpbridge_options.o' libtool=no @AMDEPBACKSLASH@
+unittests-options.o: options.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(unittests_CFLAGS) $(CFLAGS) -MT unittests-options.o -MD -MP -MF $(DEPDIR)/unittests-options.Tpo -c -o unittests-options.o `test -f 'options.c' || echo '$(srcdir)/'`options.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/unittests-options.Tpo $(DEPDIR)/unittests-options.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='options.c' object='unittests-options.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(unittests_CFLAGS) $(CFLAGS) -c -o unittests-tcpbridge_options.o `test -f 'tcpbridge_options.c' || echo '$(srcdir)/'`tcpbridge_options.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(unittests_CFLAGS) $(CFLAGS) -c -o unittests-options.o `test -f 'options.c' || echo '$(srcdir)/'`options.c
 
-unittests-tcpbridge_options.obj: tcpbridge_options.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(unittests_CFLAGS) $(CFLAGS) -MT unittests-tcpbridge_options.obj -MD -MP -MF $(DEPDIR)/unittests-tcpbridge_options.Tpo -c -o unittests-tcpbridge_options.obj `if test -f 'tcpbridge_options.c'; then $(CYGPATH_W) 'tcpbridge_options.c'; else $(CYGPATH_W) '$(srcdir)/tcpbridge_options.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/unittests-tcpbridge_options.Tpo $(DEPDIR)/unittests-tcpbridge_options.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tcpbridge_options.c' object='unittests-tcpbridge_options.obj' libtool=no @AMDEPBACKSLASH@
+unittests-options.obj: options.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(unittests_CFLAGS) $(CFLAGS) -MT unittests-options.obj -MD -MP -MF $(DEPDIR)/unittests-options.Tpo -c -o unittests-options.obj `if test -f 'options.c'; then $(CYGPATH_W) 'options.c'; else $(CYGPATH_W) '$(srcdir)/options.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/unittests-options.Tpo $(DEPDIR)/unittests-options.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='options.c' object='unittests-options.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(unittests_CFLAGS) $(CFLAGS) -c -o unittests-tcpbridge_options.obj `if test -f 'tcpbridge_options.c'; then $(CYGPATH_W) 'tcpbridge_options.c'; else $(CYGPATH_W) '$(srcdir)/tcpbridge_options.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(unittests_CFLAGS) $(CFLAGS) -c -o unittests-options.obj `if test -f 'options.c'; then $(CYGPATH_W) 'options.c'; else $(CYGPATH_W) '$(srcdir)/options.c'; fi`
 
-unittests-tcpbridge_signal.o: tcpbridge_signal.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(unittests_CFLAGS) $(CFLAGS) -MT unittests-tcpbridge_signal.o -MD -MP -MF $(DEPDIR)/unittests-tcpbridge_signal.Tpo -c -o unittests-tcpbridge_signal.o `test -f 'tcpbridge_signal.c' || echo '$(srcdir)/'`tcpbridge_signal.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/unittests-tcpbridge_signal.Tpo $(DEPDIR)/unittests-tcpbridge_signal.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tcpbridge_signal.c' object='unittests-tcpbridge_signal.o' libtool=no @AMDEPBACKSLASH@
+unittests-tca_signal.o: tca_signal.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(unittests_CFLAGS) $(CFLAGS) -MT unittests-tca_signal.o -MD -MP -MF $(DEPDIR)/unittests-tca_signal.Tpo -c -o unittests-tca_signal.o `test -f 'tca_signal.c' || echo '$(srcdir)/'`tca_signal.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/unittests-tca_signal.Tpo $(DEPDIR)/unittests-tca_signal.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tca_signal.c' object='unittests-tca_signal.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(unittests_CFLAGS) $(CFLAGS) -c -o unittests-tcpbridge_signal.o `test -f 'tcpbridge_signal.c' || echo '$(srcdir)/'`tcpbridge_signal.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(unittests_CFLAGS) $(CFLAGS) -c -o unittests-tca_signal.o `test -f 'tca_signal.c' || echo '$(srcdir)/'`tca_signal.c
 
-unittests-tcpbridge_signal.obj: tcpbridge_signal.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(unittests_CFLAGS) $(CFLAGS) -MT unittests-tcpbridge_signal.obj -MD -MP -MF $(DEPDIR)/unittests-tcpbridge_signal.Tpo -c -o unittests-tcpbridge_signal.obj `if test -f 'tcpbridge_signal.c'; then $(CYGPATH_W) 'tcpbridge_signal.c'; else $(CYGPATH_W) '$(srcdir)/tcpbridge_signal.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/unittests-tcpbridge_signal.Tpo $(DEPDIR)/unittests-tcpbridge_signal.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tcpbridge_signal.c' object='unittests-tcpbridge_signal.obj' libtool=no @AMDEPBACKSLASH@
+unittests-tca_signal.obj: tca_signal.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(unittests_CFLAGS) $(CFLAGS) -MT unittests-tca_signal.obj -MD -MP -MF $(DEPDIR)/unittests-tca_signal.Tpo -c -o unittests-tca_signal.obj `if test -f 'tca_signal.c'; then $(CYGPATH_W) 'tca_signal.c'; else $(CYGPATH_W) '$(srcdir)/tca_signal.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/unittests-tca_signal.Tpo $(DEPDIR)/unittests-tca_signal.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tca_signal.c' object='unittests-tca_signal.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(unittests_CFLAGS) $(CFLAGS) -c -o unittests-tcpbridge_signal.obj `if test -f 'tcpbridge_signal.c'; then $(CYGPATH_W) 'tcpbridge_signal.c'; else $(CYGPATH_W) '$(srcdir)/tcpbridge_signal.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(unittests_CFLAGS) $(CFLAGS) -c -o unittests-tca_signal.obj `if test -f 'tca_signal.c'; then $(CYGPATH_W) 'tca_signal.c'; else $(CYGPATH_W) '$(srcdir)/tca_signal.c'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique

@@ -1,5 +1,5 @@
-tcpbridge
-=========
+tcp client adapter
+==================
 
 A small tool to connect two clients without an intermediate server,
 e.g. a passive VNC server to an ordinary VNC client instead of a
@@ -8,7 +8,7 @@ listening viewer.
 ------------     ---------------------------------     ------------
 ||        ||     ||        -------------        ||     ||        ||
 || Client || --> || Server |   <--->   | Server || <-- || Client ||
-||        || <-- || socket | TCPBRIDGE | socket || --> ||        ||
+||        || <-- || socket |    TCA    | socket || --> ||        ||
 ------------     ||        |           |        ||     ------------
                  ||        -------------        ||
                  ---------------------------------
