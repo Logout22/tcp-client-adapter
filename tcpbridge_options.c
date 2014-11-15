@@ -138,7 +138,8 @@ tcpbridge_options *evaluate_options(int argc, char *argv[]) {
                     "Usage: %s", usage_text(argv[0]));
         }
         if (current_ep->address_str == NULL) {
-            current_ep->address_str = strdup(DEFAULT_ADDRESS);
+            current_ep->address_str =
+                result->use_ipv6 ? strdup("::0") : strdup("0.0.0.0");
         }
     }
 

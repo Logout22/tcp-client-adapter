@@ -62,11 +62,11 @@ void test_default_values(void) {
     g_assert_cmpstr(
             result->connection_endpoints[0]->address_str,
             ==,
-            DEFAULT_ADDRESS);
+            "0.0.0.0");
     g_assert_cmpstr(
             result->connection_endpoints[1]->address_str,
             ==,
-            DEFAULT_ADDRESS);
+            "0.0.0.0");
     g_assert(result->connection_endpoints[0]->port == 6);
     g_assert(result->connection_endpoints[1]->port == 8);
 }
