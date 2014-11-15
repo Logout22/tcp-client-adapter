@@ -10,35 +10,35 @@
 #include <err.h>
 #include <errno.h>
 
-#include "tcpbridge_options.h"
+#include "options.h"
 #include "freeatexit.h"
 
-tcpbridge_address *allocate_tcpbridge_address() {
-    ALLOCATE(tcpbridge_address, result);
+tca_address *allocate_tca_address() {
+    ALLOCATE(tca_address, result);
     return result;
 }
 
-void free_tcpbridge_address(void *t) {
-    tcpbridge_address *target = (tcpbridge_address*) t;
+void free_tca_address(void *t) {
+    tca_address *target = (tca_address*) t;
     free(target->address_str);
     free(target);
 }
 
-tcpbridge_options *allocate_tcpbridge_options() {
-    ALLOCATE(tcpbridge_options, result);
+tca_options *allocate_tca_options() {
+    ALLOCATE(tca_options, result);
 
     int i;
     for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
-        result->connection_endpoints[i] = allocate_tcpbridge_address();
+        result->connection_endpoints[i] = allocate_tca_address();
     }
     return result;
 }
 
-void free_tcpbridge_options(void *t) {
-    tcpbridge_options *target = (tcpbridge_options *) t;
+void free_tca_options(void *t) {
+    tca_options *target = (tca_options *) t;
     int i;
     for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
-        free_tcpbridge_address(target->connection_endpoints[i]);
+        free_tca_address(target->connection_endpoints[i]);
     }
     free(target);
 }
@@ -90,10 +90,10 @@ bool get_port(char const *arg, uint16_t *out_port) {
     return true;
 }
 
-tcpbridge_options *evaluate_options(int argc, char *argv[]) {
-    tcpbridge_options *result;
-    result = allocate_tcpbridge_options();
-    free_object_at_exit(free_tcpbridge_options, result);
+tca_options *evaluate_options(int argc, char *argv[]) {
+    tca_options *result;
+    result = allocate_tca_options();
+    free_object_at_exit(free_tca_options, result);
 
     optind = 1;
     int selected_option;
@@ -131,7 +131,7 @@ tcpbridge_options *evaluate_options(int argc, char *argv[]) {
     /* check requirements and set defaults where applicable */
     int i;
     for (i = 0; i < NUMBER_OF_ENDPOINTS; i++) {
-        tcpbridge_address *current_ep = result->connection_endpoints[i];
+        tca_address *current_ep = result->connection_endpoints[i];
 
         if (current_ep->port == 0) {
             errx(ENOENT, "Both ports are required for forwarding.\n\n"

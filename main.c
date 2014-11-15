@@ -1,14 +1,14 @@
 #include <stdlib.h>
 
-#include "tcpbridge_options.h"
-#include "tcpbridge_signal.h"
+#include "options.h"
+#include "tca_signal.h"
 #include "freeatexit.h"
 #include "nwfns.h"
 
 int main(int argc, char *argv[]) {
     atexit(free_atexit);
 
-    tcpbridge_options *global_opts = evaluate_options(argc, argv);
+    tca_options *global_opts = evaluate_options(argc, argv);
 
     register_signal_handler();
 

@@ -5,7 +5,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <event2/event.h>
-#include "tcpbridge_options.h"
+#include "options.h"
 
 typedef struct bridge_client {
     int server_socket;
@@ -13,7 +13,7 @@ typedef struct bridge_client {
 
     /* reference pointers: */
     struct event_base *evbase;
-    tcpbridge_address *address;
+    tca_address *address;
     bool use_ipv6;
     struct bridge_client *opposite_client;
 } bridge_client;
@@ -22,9 +22,9 @@ bridge_client *allocate_bridge_client(void);
 void free_bridge_client(void *arg);
 
 void initialise_clients(bridge_client **clients,
-        struct event_base *evbase, tcpbridge_options *opts);
-int establish_socket(tcpbridge_address *address, bool use_ipv6);
-struct event_base *setup_network(tcpbridge_options *opts);
+        struct event_base *evbase, tca_options *opts);
+int establish_socket(tca_address *address, bool use_ipv6);
+struct event_base *setup_network(tca_options *opts);
 
 #endif
 

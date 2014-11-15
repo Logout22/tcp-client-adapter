@@ -1,5 +1,5 @@
-#include "tcpbridge_options.h"
-#include "tcpbridge_signal.h"
+#include "options.h"
+#include "tca_signal.h"
 #include "freeatexit.h"
 #include "nwfns.h"
 
@@ -15,7 +15,7 @@
 #include <arpa/inet.h>
 
 typedef struct integtest_fixture {
-    tcpbridge_options *opts;
+    tca_options *opts;
     struct event_base *evbase;
 } integtest_fixture;
 
@@ -30,8 +30,8 @@ typedef struct test_client {
 #endif
 } test_client;
 
-tcpbridge_options *init_tcpbridge_options(void) {
-    tcpbridge_options *result = allocate_tcpbridge_options();
+tca_options *init_tca_options(void) {
+    tca_options *result = allocate_tca_options();
 #ifdef HAVE_IPV6
     result->use_ipv6 = true;
     result->connection_endpoints[0]->address_str = strdup("::1");
@@ -48,13 +48,13 @@ tcpbridge_options *init_tcpbridge_options(void) {
 
 void initialise_test(void) {
     memset(&fixture, 0, sizeof(fixture));
-    fixture.opts = init_tcpbridge_options();
+    fixture.opts = init_tca_options();
     fixture.evbase = setup_network(fixture.opts);
 }
 
 void teardown_fixture(void) {
     if (fixture.opts) {
-        free_tcpbridge_options(fixture.opts);
+        free_tca_options(fixture.opts);
     }
     free_atexit();
 }

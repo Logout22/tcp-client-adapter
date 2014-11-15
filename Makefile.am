@@ -1,10 +1,10 @@
 ## Process this file with automake to produce Makefile.in
 
-bin_PROGRAMS = tcpbridge
-SOURCES = freeatexit.c nwfns.c tcpbridge_options.c tcpbridge_signal.c
-tcpbridge_SOURCES = tcpbridge_main.c $(SOURCES)
-tcpbridge_CFLAGS = $(LIBEVENT_CFLAGS)
-tcpbridge_LDADD = $(LIBEVENT_LIBS)
+bin_PROGRAMS = tca
+SOURCES = freeatexit.c nwfns.c options.c tca_signal.c
+tca_SOURCES = main.c $(SOURCES)
+tca_CFLAGS = $(LIBEVENT_CFLAGS)
+tca_LDADD = $(LIBEVENT_LIBS)
 
 if TESTS
 TESTS = $(check_PROGRAMS)
