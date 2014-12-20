@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([tcp client adapter], [1.1], [abmelden22@gmx.de])
+AC_INIT([tcp client adapter], [1.2], [abmelden22@gmx.de])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([main.c])
 AC_CONFIG_HEADERS([config.h])

@@ -13,6 +13,7 @@
 #include <sys/wait.h>
 
 #include <arpa/inet.h>
+#include <netinet/in.h>
 
 typedef struct integtest_fixture {
     tca_options *opts;
